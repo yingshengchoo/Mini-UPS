@@ -6,7 +6,30 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _EncodeVarint
 from io import BytesIO
 
-
+# World Command Interaction Overview
+# Note: UPS and AMAZON commands are inside A/UCommands and World Responses are in A/UResponses
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#      UPS     |     AMAZON    |          World         #
+#-------------------------------------------------------#
+#   UConnect   |    AConnect   |                        # Truck and warehouses initialized here (需要在)
+#              |               | UConnected, AConnected #
+#              | APurchaseMore |                        # ¡¡¡Must have stock to pack!!! (要有貨才能包裝)
+#              |               |      APurchaseMore     # if there is stock already, no need to purchase (如果有貨可以不用購買)
+#              |     APack     |                        #
+#              |               |         APacked        #
+#   UGoPickUp  |               |                        # ¿¿¿UGoPickup can occur can be completed without APack to be finished??? (貨車可以在包裹包奘好前到倉庫)
+#              |               |        UFinished       # <-- Status = "ARRIVE WAREHOUSE"
+#              |     ALoad     |                        #
+#              |               |         ALoaded        #
+#  UGoDeliver  |               |                        #
+#              |               |        UFinished       # <-- Status = "IDLE"
+# UDisconnect  |  ADisconnect  |                        #
+#              |               |       finished x2      # <-- finished = True
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+# Aside from the commands above : A/UQuery (UPS returns UTruck, Amazon returns APackage)
+# Aside from the responses above: A/UErr, APackage, UTruck
 HOST = 'vcm-46946.vm.duke.edu'
 PORT = 12345
 
@@ -97,7 +120,7 @@ def simulate_amazon_flow(sock, seq_start=1):
 
     send_msg(sock, cmd)
     print("Sent APurchaseMore and APack")
-    # make sure that it receives packages so that Truck can go pick it up
+    #make sure that it receives packages so that Truck can go pick it up
     while True:
         response = recv_msg(sock, amazon_pb2.AResponses)
         if response is None:
@@ -125,7 +148,6 @@ def simulate_ups_pickup(sock, seq_start=1):
 
     send_msg(sock, cmd)
     print("Sent UGoPickup")
-    recv_msg(sock, world_ups_1_pb2.UResponses)
     while True:
         response = recv_msg(sock, world_ups_1_pb2.UResponses)
         if response is None:
@@ -201,6 +223,43 @@ def simulate_ups_deliver(sock, seq_start=2):
 
         time.sleep(0.5)
 
+def simulate_amazon_disconnect(sock):
+    cmd = amazon_pb2.ACommands()
+    cmd.disconnect = True
+    send_msg(sock, cmd)
+    while True:
+        response = recv_msg(sock, amazon_pb2.AResponses)
+        if response is None:
+            print("Amazon socket closed unexpectedly.")
+            return False
+
+        print("Amazon received AResponses:", response)
+
+        if response.finished == True:
+            print("Amazon disconnected gracefully.")
+            return True
+
+        time.sleep(0.5)
+
+def simulate_ups_disconnect(sock):
+    cmd = world_ups_1_pb2.UCommands()
+    cmd.disconnect = True
+    send_msg(sock, cmd)
+    while True:
+        response = recv_msg(sock, world_ups_1_pb2.UResponses)
+        if response is None:
+            print("UPS socket closed unexpectedly.")
+            return False
+
+        print("UPS received UResponses:", response)
+
+        if response.finished == True:
+            print("UPS disconnected gracefully.")
+            return True
+
+        time.sleep(0.5)
+
+
 
 def main():
     print("Full simulation beginning...")
@@ -211,7 +270,8 @@ def main():
     simulate_ups_pickup(ups_sock)
     simulate_amazon_load_and_put(amazon_sock)
     simulate_ups_deliver(ups_sock)
-
+    simulate_amazon_disconnect(amazon_sock)
+    simulate_ups_disconnect(ups_sock)
     amazon_sock.close()
     ups_sock.close()
     print("Simulation complete")
