@@ -18,7 +18,7 @@ from io import BytesIO
 #              |               |      APurchaseMore     # if there is stock already, no need to purchase (如果有貨可以不用購買)
 #              |     APack     |                        #
 #              |               |         APacked        #
-#   UGoPickUp  |               |                        # ¿¿¿UGoPickup can occur can be completed without APack to be finished??? (貨車可以在包裹包奘好前到倉庫)
+#   UGoPickUp  |               |                        # ¿¿¿UGoPickup should only be done when packages are packed??? (貨車需要再包裹包奘好才能到倉庫)
 #              |               |        UFinished       # <-- Status = "ARRIVE WAREHOUSE"
 #              |     ALoad     |                        #
 #              |               |         ALoaded        #
