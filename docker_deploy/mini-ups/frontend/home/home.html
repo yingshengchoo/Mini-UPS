@@ -15,16 +15,18 @@
     <div class="card">
       <h2>Package tracking</h2>
       <input type="text" id="trackingNumber" placeholder="Enter pacakge ID..." />
-      <button onclick="track()">Trace</button>
+      <button onclick="track()">Track</button>
       <div class="result" id="result" style="display: none;"></div>
     </div>
     <div class="card">
         <h2>Track your own</h2>
-        <button onclick="window.location.href='/login/login.html'">Login</button>
-        <button onclick="window.location.href='/register/register.html'">Register</button>
+        <button id="btn-login" onclick="window.location.href='/login/login.html'">Login</button>
+        <button id="btn-register" onclick="window.location.href='/register/register.html'">Register</button>
+        <div class="result" id="login-status" style="display: none;"></div>
+        <button id="btn-logout" onclick="window.location.href='/home/home.html'" style="display: none;">Log out</button>
     </div>
   </main>
 
-  <script src="main.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>

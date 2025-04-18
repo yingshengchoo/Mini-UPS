@@ -11,8 +11,8 @@ async function register() {
     const data = await res.json();
     const result = document.getElementById("register-result");
 
+    result.style.display = 'block';
     if (res.ok) {
-        result.style.display = 'block';
         if (data.error != null) {
             result.innerText = data.error;
         }else{

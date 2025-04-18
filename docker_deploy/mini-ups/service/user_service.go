@@ -6,6 +6,8 @@ import (
 	"mini-ups/dao"
 	"mini-ups/model"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -34,4 +36,34 @@ func RegisterUser(username, password string) error {
 	}
 
 	return dao.CreateUser(&newUser)
+}
+
+func LoginUser(username, password string, c *gin.Context) error {
+	// check if user exists
+	user, _ := dao.GetUserByUsername(username)
+	if user == nil {
+		log.Printf("Username <%s> not exists!", username)
+		return fmt.Errorf("username <%s> not exists", username)
+	}
+
+	// match the info
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	// log.Printf("err: %v", err)
+
+	if err != nil {
+		// not match
+		return fmt.Errorf("wrong username or password")
+	}
+
+	// matched
+	log.Println("match successfully")
+	session := sessions.Default(c)
+	session.Set("user", username)
+	err = session.Save()
+	if err != nil {
+		log.Println("Failed to save session:", err)
+	}
+
+	return nil
+
 }

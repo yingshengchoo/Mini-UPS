@@ -11,9 +11,18 @@ async function login() {
     const data = await res.json();
     const result = document.getElementById("login-result");
 
+    result.style.display = 'block'
     if (res.ok) {
-        result.innerText = "Login successfully!";
-        window.location.href = "/static/index.html";
+        if (data.login == true){
+
+        
+            result.innerText = "Login successfully!\nRedirecting to home...";
+            setTimeout(() => {
+                window.location.href = "/home/home.html";
+            },1000);
+        }else{
+            result.innerText = "wrong username or password";
+        }
     } else {
         result.innerText = "Failed to login: " + data.error;
     }
