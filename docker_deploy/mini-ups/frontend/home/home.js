@@ -15,6 +15,19 @@ async function track() {
     }
   }
 
+async function logout() {
+
+  try {
+    const res = await fetch(`/api/logout`,{
+      method:"POST"
+    });
+    if (!res.ok) throw new Error('Fail to logout');
+    window.location.href = "/home/home.html";
+  } catch (e) {
+    resultEl.innerText = 'Failed to logout';
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   fetch('/api/user/info',{
     method:"GET",

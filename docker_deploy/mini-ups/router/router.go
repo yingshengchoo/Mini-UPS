@@ -24,6 +24,7 @@ func InitRouter() *gin.Engine {
 	{
 		apiGroup.POST("/register", controller.Register)
 		apiGroup.POST("/login", controller.Login)
+		apiGroup.POST("/logout", controller.Logout)
 		apiGroup.GET("/user/info", controller.GetUserInfo)
 	}
 	return router

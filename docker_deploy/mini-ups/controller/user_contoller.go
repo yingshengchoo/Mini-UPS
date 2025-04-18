@@ -31,7 +31,7 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "register success"})
 }
 
-// register
+// login
 func Login(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -51,6 +51,17 @@ func Login(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"login":   true,
 		"message": "Login successfully!",
+	})
+}
+
+// register
+func Logout(c *gin.Context) {
+
+	service.LogoutUser(c)
+
+	c.JSON(200, gin.H{
+		"login":   false,
+		"message": "Logout successfully!",
 	})
 }
 

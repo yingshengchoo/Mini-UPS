@@ -38,6 +38,7 @@ func RegisterUser(username, password string) error {
 	return dao.CreateUser(&newUser)
 }
 
+// login
 func LoginUser(username, password string, c *gin.Context) error {
 	// check if user exists
 	user, _ := dao.GetUserByUsername(username)
@@ -60,6 +61,20 @@ func LoginUser(username, password string, c *gin.Context) error {
 	session := sessions.Default(c)
 	session.Set("user", username)
 	err = session.Save()
+	if err != nil {
+		log.Println("Failed to save session:", err)
+	}
+
+	return nil
+}
+
+// logout
+func LogoutUser(c *gin.Context) error {
+
+	// get logined user
+	session := sessions.Default(c)
+	session.Delete("user")
+	err := session.Save()
 	if err != nil {
 		log.Println("Failed to save session:", err)
 	}
