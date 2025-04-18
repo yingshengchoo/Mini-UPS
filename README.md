@@ -1,3 +1,44 @@
+# Mini-UPS
+
+## structure
+
+```bash
+mini-ups
+├── config
+│   ├── config.go   # config reader
+│   └── config.yaml # config file
+├── controller      # controller(entry)
+│   └── user_contoller.go
+├── dao             # database access object(operate data here)
+│   └── user_dao.go
+├── db              # database
+│   └── db.go
+├── Dockerfile
+├── frontend        # frontend html,css,js (divided by module)
+│   ├── home
+│   │   ├── home.html
+│   │   └── home.js
+│   ├── login
+│   │   ├── login.html
+│   │   └── login.js
+│   ├── register
+│   │   ├── register.html
+│   │   └── register.js
+│   └── style.css   # shared css
+├── go.mod          # go project module config
+├── go.sum          
+├── main.go         # program entry
+├── model           # database model
+│   └── user.go
+├── router          # router (register url here)
+│   └── router.go
+├── service         # called by controller to do core logic, can call dao
+│   └── user_service.go
+└── util            # any util you want
+    └── util.go
+
+```
+
 # world_simulator_exec
 This is the executable file wrapped in a docker for world_simulator, background world for ECE 568 final project.
 No source code included.
