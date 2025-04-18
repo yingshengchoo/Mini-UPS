@@ -8,6 +8,9 @@ import (
 func InitRouter() *gin.Engine {
 	router := gin.Default()
 	router.Static("/static", "./frontend")
+	router.Static("/home", "./frontend/home")
+	router.Static("/login", "./frontend/login")
+	router.Static("/register", "./frontend/register")
 	router.GET("/users/:username", controller.GetUserByUsername)
 	return router
 }

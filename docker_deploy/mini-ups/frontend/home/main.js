@@ -14,3 +14,4 @@ async function track() {
       resultEl.innerText = 'Failed to track';
     }
   }
+

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UPS track system</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header>
@@ -14,9 +14,14 @@
   <main>
     <div class="card">
       <h2>Package tracking</h2>
-      <input type="text" id="trackingNumber" placeholder="enter pacakge ID..." />
+      <input type="text" id="trackingNumber" placeholder="Enter pacakge ID..." />
       <button onclick="track()">Trace</button>
       <div class="result" id="result" style="display: none;"></div>
+    </div>
+    <div class="card">
+        <h2>Track your own</h2>
+        <button onclick="window.location.href='../login/login.html'">Login</button>
+        <button onclick="window.location.href='../register/register.html'">Register</button>
     </div>
   </main>
 
