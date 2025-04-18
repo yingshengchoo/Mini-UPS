@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>mini-ups package trace</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UPS track system</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>mini-UPS package trace</h1>
-    <input type="text" id="trackingInput" placeholder="Enter package number" />
-    <button onclick="trackPackage()">Trace</button>
-    
-    <div id="result" class="result"></div>
-  </div>
+  <header>
+    mini-UPS track system
+  </header>
+  <main>
+    <div class="card">
+      <h2>Package tracking</h2>
+      <input type="text" id="trackingNumber" placeholder="enter pacakge ID..." />
+      <button onclick="track()">Trace</button>
+      <div class="result" id="result" style="display: none;"></div>
+    </div>
+  </main>
 
   <script src="main.js"></script>
 </body>
