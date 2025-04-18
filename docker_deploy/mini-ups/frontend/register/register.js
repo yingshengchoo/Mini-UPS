@@ -12,10 +12,15 @@ async function register() {
     const result = document.getElementById("register-result");
 
     if (res.ok) {
-        result.innerText = "Register successfully!";
-        setTimeout(() => {
-        window.location.href = "login.html";
-        }, 1000);
+        result.style.display = 'block';
+        if (data.error != null) {
+            result.innerText = data.error;
+        }else{
+            result.innerText = data.message+"\nredirecting to login...";
+            setTimeout(() => {
+                window.location.href = "/login/login.html";
+            }, 1000);
+        }
     } else {
         result.innerText = "Failed to register: " + data.error;
     }

@@ -12,3 +12,8 @@ func GetUserByUsername(username string) (*model.User, error) {
 	}
 	return &user, nil
 }
+
+// create user
+func CreateUser(user *model.User) error {
+	return db.DB.Create(user).Error
+}

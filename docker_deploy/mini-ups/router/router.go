@@ -12,5 +12,10 @@ func InitRouter() *gin.Engine {
 	router.Static("/login", "./frontend/login")
 	router.Static("/register", "./frontend/register")
 	router.GET("/users/:username", controller.GetUserByUsername)
+
+	apiGroup := router.Group("/api")
+	{
+		apiGroup.POST("/register", controller.Register)
+	}
 	return router
 }
