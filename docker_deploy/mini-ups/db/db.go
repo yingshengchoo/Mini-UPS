@@ -3,6 +3,7 @@ package db
 import (
 	"log"
 	"mini-ups/config"
+	"mini-ups/model"
 	"strconv"
 
 	"gorm.io/driver/postgres"
@@ -19,4 +20,13 @@ func InitDB() {
 		log.Fatal("Failed to connect to DB:", err)
 	}
 	DB = db
+
+	initTables()
+}
+
+func initTables() {
+	err := DB.AutoMigrate(&model.User{})
+	if err != nil {
+		log.Fatal("failed to auto migrate user:", err)
+	}
 }
