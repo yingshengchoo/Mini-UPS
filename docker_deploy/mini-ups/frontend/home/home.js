@@ -18,7 +18,7 @@ async function track() {
 async function logout() {
 
   try {
-    const res = await fetch(`/api/logout`,{
+    const res = await fetch(`/api/user/logout`,{
       method:"POST"
     });
     if (!res.ok) throw new Error('Fail to logout');

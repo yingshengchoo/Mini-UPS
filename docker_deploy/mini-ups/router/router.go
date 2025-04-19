@@ -22,10 +22,22 @@ func InitRouter() *gin.Engine {
 
 	apiGroup := router.Group("/api")
 	{
-		apiGroup.POST("/register", controller.Register)
-		apiGroup.POST("/login", controller.Login)
-		apiGroup.POST("/logout", controller.Logout)
-		apiGroup.GET("/user/info", controller.GetUserInfo)
+		// user api
+		userGroup := apiGroup.Group("/user")
+		{
+			userGroup.POST("/register", controller.Register)
+			userGroup.POST("/login", controller.Login)
+			userGroup.POST("/logout", controller.Logout)
+			userGroup.GET("/info", controller.GetUserInfo)
+		}
+
+		// truck api
+		truckGroup := apiGroup.Group("/truck")
+		{
+			truckGroup.POST("/register", controller.RegisterTruck)
+			truckGroup.GET("/info", controller.GetTruckInfo)
+		}
+
 	}
 	return router
 }

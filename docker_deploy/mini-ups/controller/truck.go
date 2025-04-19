@@ -30,3 +30,20 @@ func RegisterTruck(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "register success"})
 }
+
+// get truck info
+func GetTruckInfo(c *gin.Context) {
+	var request RegisterTruckRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	truck, err := service.GetTruckByID(request.ID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"truck": truck})
+}
