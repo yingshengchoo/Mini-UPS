@@ -2,13 +2,13 @@ package model
 
 type Truck struct {
 	ID     TruckID    `gorm:"primary_key" json:"id"`
-	Coord  Coordinate `gorm:"not null" json:"coord"`
+	Coord  Coordinate `gorm:"not null;embedded" json:"coord"`
 	Status Status     `gorm:"type:varchar(20)" json:"status"`
 }
 
 type Coordinate struct {
-	X int
-	Y int
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 type TruckID int
