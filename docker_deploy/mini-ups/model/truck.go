@@ -1,7 +1,7 @@
 package model
 
 type Truck struct {
-	ID     uint       `gorm:"primary_key" json:"id"`
+	ID     TruckID    `gorm:"primary_key" json:"id"`
 	Coord  Coordinate `gorm:"not null" json:"coord"`
 	Status Status     `gorm:"type:varchar(20)" json:"status"`
 }
@@ -11,6 +11,7 @@ type Coordinate struct {
 	Y int
 }
 
+type TruckID int
 type Status string
 
 // truck statuses
@@ -31,9 +32,10 @@ var TruckStatus = struct {
 }
 
 // new a truck
-func NewTruck(coord Coordinate, status Status) *Truck {
+func NewTruck(truckID TruckID, x int, y int, status Status) *Truck {
 	return &Truck{
-		Coord:  coord,
+		ID:     truckID,
+		Coord:  Coordinate{X: x, Y: y},
 		Status: status,
 	}
 }
