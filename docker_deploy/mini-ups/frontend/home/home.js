@@ -79,12 +79,11 @@ async function getUserInfo() {
 // get package info
 async function getPackageInfo() {
   try{
-    // get package info
+    // TODO get package info
     const response = await fetch('/api/package/info',{
       method:"GET",
       credentials:"include"
     })
-    // TODO render package info
     // use fake data now
     sessionStorage.setItem("packages", fakeData);
     
@@ -111,12 +110,29 @@ async function getPackageInfo() {
       clone.querySelector('.package-location').textContent = pkg.location;
       clone.querySelector('.package-updatedAt').textContent = new Date(pkg.updatedAt).toLocaleString();
 
+      const progressBar = document.getElementById('package-progress').cloneNode(true)
+      const fill = progressBar.querySelector(".progress-fill")
+      fill.style.width = getProgressPercentage(pkg.status) + "%";
+      progressBar.style.display = 'block'
+
+      clone.appendChild(progressBar)
       container.appendChild(clone);
     });
   }
   catch(e){
     console.error("failed to request", e);
   }
+}
+
+
+const statusOrder = [
+  "created", "packed", "picked", "loaded", "delivering", "delivered"
+];
+
+function getProgressPercentage(currentStatus) {
+  const idx = statusOrder.indexOf(currentStatus.toLowerCase());
+  if (idx === -1) return 0;
+  return ((idx + 1) / statusOrder.length) * 100;
 }
 
 const fakeData = [
@@ -126,7 +142,7 @@ const fakeData = [
     details: "Fragile items",
     content: "Electronics",
     address: "123 Street, City, Country",
-    status: "Shipped",
+    status: "delivering",
     location: "Warehouse A",
     updatedAt: "2025-04-19T12:30:00"
   },
@@ -136,7 +152,7 @@ const fakeData = [
     details: "Documents",
     content: "Paperwork",
     address: "456 Avenue, City, Country",
-    status: "Pending",
+    status: "packed",
     location: "Warehouse B",
     updatedAt: "2025-04-19T14:00:00"
   }

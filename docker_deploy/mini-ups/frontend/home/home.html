@@ -6,7 +6,7 @@
   <title>UPS track system</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/style.css" />
-  <link rel="stylesheet" href="/static/home/home.css" />
+  <link rel="stylesheet" href="/static/home/package.css" />
 </head>
 <body>
   <header>
@@ -38,6 +38,19 @@
             <p><strong>Location:</strong> <span class="package-location"></span></p>
             <p><strong>Updated At:</strong> <span class="package-updatedAt"></span></p>
             <hr/>
+          </div>
+          <div class="package-progress" id="package-progress" style="display: none;">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-labels">
+              <span>Created</span>
+              <span>Packed</span>
+              <span>Picked</span>
+              <span>Loaded</span>
+              <span>Delivering</span>
+              <span>Delivered</span>
+            </div>
           </div>
         </div>
     </div>
