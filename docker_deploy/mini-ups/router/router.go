@@ -38,6 +38,12 @@ func InitRouter() *gin.Engine {
 			truckGroup.GET("/info", controller.GetTruckInfo)
 		}
 
+		//package api
+		packageGroup := apiGroup.Group("/package")
+		{
+			packageGroup.POST("/register", controller.RegisterPackage)
+			packageGroup.GET("/info", controller.GetPackagesByUser) // or GetCurrentUserPackages if session-based
+		}
 	}
 	return router
 }

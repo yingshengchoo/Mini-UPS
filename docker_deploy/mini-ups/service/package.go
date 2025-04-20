@@ -48,3 +48,12 @@ func LinkTruckToPackage(packageID string, truckID uint) error {
 func ChangePackageStatus(packageID string, newStatus model.PackageStatus) error {
 	return dao.UpdatePackageStatus(packageID, newStatus)
 }
+
+// retrieves warehouseID of the package with package_id
+func GetWarehouseID(package_id string) (uint, error) {
+	warehouse_id, err := dao.GetWareHouseIDByPackage(package_id)
+	if err != nil {
+		return 0, err //assuming 0 is not associated with any warehouse
+	}
+	return warehouse_id, nil
+}
