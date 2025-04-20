@@ -27,12 +27,12 @@ func GetPackagesByPackageID(packageID uint) (*model.Package, error) {
 	return &pack, nil
 }
 
-func UpdateDeliveryAddress(packageID uint, newX, newY uint) (int64, error) {
+func UpdateDeliveryAddress(packageID uint, newCoord model.Coordinate) (int64, error) {
 	result := db.DB.Model(&model.Package{}).
-		Where("id = ? AND truck_status != ?", packageID, "out_for_delivery").
-		Updates(map[string]interface{}{
-			"Destination_X": newX,
-			"Destination_Y": newY,
+		Where("id = ? AND status != ?", packageID, "out_for_delivery").
+		Updates(model.Coordinate{
+			X: newCoord.X,
+			Y: newCoord.Y,
 		})
 	return result.RowsAffected, result.Error
 }

@@ -16,8 +16,8 @@ func GetPackageInfo(packageID uint) (*model.Package, error) {
 }
 
 // Attempts to update the delivery address; handles logic
-func RedirectPackage(packageID uint, newX, newY uint) (string, error) {
-	rows, err := dao.UpdateDeliveryAddress(packageID, newX, newY)
+func ChangePackageDestination(packageID uint, newCoord model.Coordinate) (string, error) {
+	rows, err := dao.UpdateDeliveryAddress(packageID, newCoord)
 	if err != nil {
 		return "", err
 	}
@@ -40,8 +40,4 @@ func LinkTruckToPackage(packageID string, truckID uint) error {
 // Changes status of a package
 func ChangePackageStatus(packageID string, newStatus model.PackageStatus) error {
 	return dao.UpdatePackageStatus(packageID, newStatus)
-}
-
-func ChangePackageStatusByTruckStatus(packageID string, newStatus model.TrucdkStatus) error {
-
 }

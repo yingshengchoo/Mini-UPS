@@ -10,11 +10,10 @@ type Package struct {
 	User    User   `gorm:"foreignKey:UserID"`
 	TruckID *uint  `json:"truck_id"` // nullable
 	//Truck       *Truck         `gorm:"foreignKey:TruckID"`
-	Items         datatypes.JSON `json:"items"`
-	Destination_X uint           `gorm:"not null" json:"destination_x"`
-	Destination_Y uint           `gorm:"not null" json:"destination_y"`
-	WarehouseID   int            `gorm:"not null" json:"warehouse_id"`
-	Status        PackageStatus  `gorm:"type:varchar(20)" json:"status"`
+	Items       datatypes.JSON `json:"items"`
+	Destination Coordinate     `gorm:"not null;embedded" json:"coord"`
+	WarehouseID int            `gorm:"not null" json:"warehouse_id"`
+	Status      PackageStatus  `gorm:"type:varchar(20)" json:"status"`
 }
 
 type PackageStatus string
@@ -35,4 +34,9 @@ type Item struct {
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
 	Quantity    int    `json:"quantity"`
+}
+
+func (p *Package) SetCoord(x int, y int) {
+	p.Destination.X = x
+	p.Destination.Y = y
 }
