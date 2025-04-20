@@ -7,16 +7,21 @@ async function track() {
   resultEl.innerText = 'tracking...';
 
   try {
-    const res = await fetch(`/api/pacakge/info/${trackingNumber}`);
+    const res = await fetch(`/api/package/info/${trackingNumber}`);
     if (!res.ok) throw new Error('Fail to track');
 
     const data = await res.json();
-    resultEl.innerText =
-    `Package ID: ${data.package_id}\n` +
-    `Contents: ${JSON.parse(data.items).map(i => `${i.qty} x ${i.name}`).join(', ')}\n` +
-    `Delivery Address: (${data.coord.x}, ${data.coord.y})\n` +
-    `Status: ${data.status}\n` +
-    `Updated At: ${new Date(data.updated_at).toLocaleString()}`;
+
+    console.log("tracking response:", data);
+
+    resultEl.innerHTML = `
+    <p><strong>Package ID:</strong> ${data.package_id}</p>
+    <p><strong>Contents:</strong> ${(Array.isArray(data.items) ? data.items : JSON.parse(data.items))
+      .map(i => `${i.qty} x ${i.name}`).join(', ')}</p>
+    <p><strong>Delivery Address:</strong> (${data.coord.x}, ${data.coord.y})</p>
+    <p><strong>Status:</strong> ${data.status}</p>
+    <p><strong>Updated At:</strong> ${new Date(data.updated_at).toLocaleString()}</p>`;
+
   } catch (e) {
     resultEl.innerText = 'Failed to track';
   }
@@ -61,6 +66,7 @@ async function getUserInfo() {
     // check login status
     if (data.userlogined === false) {
       // show buttons
+      sessionStorage.setItem("username", null);
       const btn_login = document.getElementById('btn-login');
       const btn_register = document.getElementById('btn-register');
       btn_login.style.display = "block"

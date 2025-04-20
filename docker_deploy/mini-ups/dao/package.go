@@ -23,13 +23,9 @@ func GetPackagesByUser(username string) ([]model.Package, error) {
 
 // retrives the pacakge of the given packageID
 func GetPackagesByPackageID(packageID string) (*model.Package, error) {
-	var p model.Package
-	if err := db.DB.Where("package_id = ?", packageID).First(&p).Error; err != nil {
-		return nil, fmt.Errorf("user not found: %v", err)
-	}
 	var pack model.Package
 	if err := db.DB.
-		Where("package_id = ?", packageID).
+		Where("id = ?", packageID).
 		First(&pack).Error; err != nil {
 		return nil, err
 	}
