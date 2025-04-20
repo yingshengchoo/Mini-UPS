@@ -11,12 +11,12 @@ func GetPackagesForUser(userID uint) ([]model.Package, error) {
 }
 
 // Returns basic info of a single package
-func GetPackageInfo(packageID uint) (*model.Package, error) {
+func GetPackageInfo(packageID string) (*model.Package, error) {
 	return dao.GetPackagesByPackageID(packageID)
 }
 
 // Attempts to update the delivery address; handles logic
-func ChangePackageDestination(packageID uint, newCoord model.Coordinate) (string, error) {
+func ChangePackageDestination(packageID string, newCoord model.Coordinate) (string, error) {
 	rows, err := dao.UpdateDeliveryAddress(packageID, newCoord)
 	if err != nil {
 		return "", err
@@ -28,8 +28,15 @@ func ChangePackageDestination(packageID uint, newCoord model.Coordinate) (string
 }
 
 // Creates a new package
-func CreatePackage(pack *model.Package) error {
-	return dao.AddPackage(pack)
+func CreatePackage(package_id string, user_id uint, items string, dest_x int, dest_y int, warehouse_id uint) error {
+	return dao.CreatePackage(model.NewPackage(
+		model.PackageID(package_id),
+		user_id,
+		items,
+		dest_x, dest_y,
+		warehouse_id,
+		model.StatusCreated,
+	))
 }
 
 // Assigns a truck to a package

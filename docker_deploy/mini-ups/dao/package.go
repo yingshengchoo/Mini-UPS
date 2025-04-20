@@ -16,7 +16,7 @@ func GetPackagesByUser(userID uint) ([]model.Package, error) {
 	return packages, nil
 }
 
-func GetPackagesByPackageID(packageID uint) (*model.Package, error) {
+func GetPackagesByPackageID(packageID string) (*model.Package, error) {
 	var pack model.Package
 	if err := db.DB.
 		Select("ID", "Items", "Destination_X", "Destination_Y", "Status").
@@ -27,7 +27,7 @@ func GetPackagesByPackageID(packageID uint) (*model.Package, error) {
 	return &pack, nil
 }
 
-func UpdateDeliveryAddress(packageID uint, newCoord model.Coordinate) (int64, error) {
+func UpdateDeliveryAddress(packageID string, newCoord model.Coordinate) (int64, error) {
 	result := db.DB.Model(&model.Package{}).
 		Where("id = ? AND status != ?", packageID, "out_for_delivery").
 		Updates(model.Coordinate{
@@ -37,7 +37,7 @@ func UpdateDeliveryAddress(packageID uint, newCoord model.Coordinate) (int64, er
 	return result.RowsAffected, result.Error
 }
 
-func AddPackage(pack *model.Package) error {
+func CreatePackage(pack *model.Package) error {
 	return db.DB.Create(pack).Error
 }
 
@@ -51,4 +51,16 @@ func UpdatePackageStatus(packageID string, newStatus model.PackageStatus) error 
 	return db.DB.Model(&model.Package{}).
 		Where("id = ?", packageID).
 		Update("status", newStatus).Error
+}
+
+func GetWareHouseIDByPackage(packageID string) (uint, error) {
+	var warehouseID uint
+	err := db.DB.Model(&model.Package{}).
+		Select("warehouse_id").
+		Where("id = ?", packageID).
+		Scan(&warehouseID).Error
+	if err != nil {
+		return 0, err
+	}
+	return warehouseID, nil
 }
