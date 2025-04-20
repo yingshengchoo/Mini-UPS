@@ -110,12 +110,11 @@ async function getPackageInfo() {
       clone.querySelector('.package-location').textContent = pkg.location;
       clone.querySelector('.package-updatedAt').textContent = new Date(pkg.updatedAt).toLocaleString();
 
-      const progressBar = document.getElementById('package-progress').cloneNode(true)
-      const fill = progressBar.querySelector(".progress-fill")
-      fill.style.width = getProgressPercentage(pkg.status) + "%";
+      const progressBar = clone.querySelector(".fancy-progress-bar");
+      highlightProgressBar(progressBar, pkg.status);
       progressBar.style.display = 'block'
 
-      clone.appendChild(progressBar)
+      // clone.appendChild(progressBar)
       container.appendChild(clone);
     });
   }
@@ -129,12 +128,18 @@ const statusOrder = [
   "created", "packed", "picked", "loaded", "delivering", "delivered"
 ];
 
-function getProgressPercentage(currentStatus) {
-  const idx = statusOrder.indexOf(currentStatus.toLowerCase());
-  if (idx === -1) return 0;
-  return ((idx + 1) / statusOrder.length) * 100;
-}
+function highlightProgressBar(container, currentStatus) {
+  const steps = container.querySelectorAll('.step');
+  const currentIndex = statusOrder.indexOf(currentStatus.toLowerCase());
 
+  steps.forEach((step, index) => {
+    if (index <= currentIndex) {
+      step.classList.add("completed");
+    } else {
+      step.classList.remove("completed");
+    }
+  });
+}
 const fakeData = [
   {
     id: 1,

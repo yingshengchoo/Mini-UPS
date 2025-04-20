@@ -29,29 +29,70 @@
     border: none;
     border-top: 1px solid #e0e0e0;
   }
-  .package-progress {
+  
+  
+  .fancy-progress-bar {
     margin-top: 12px;
+    padding: 10px 0;
   }
   
-  .progress-bar {
-    position: relative;
-    height: 12px;
-    background-color: #ddd;
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(to right, #28a745, #5fd074);
-    width: 0%;
-    transition: width 0.4s ease-in-out;
-  }
-  
-  .progress-labels {
+  .progress-steps {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
-    color: #555;
-    margin-top: 4px;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  
+  .step {
+    position: relative;
+    text-align: center;
+    top: -5px;
+    flex: 1;
+    font-size: 14px;
+    color: #aaa;
+  }
+  
+  .step::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background-color: #ccc;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    transition: background-color 0.3s ease;
+  }
+  
+  .step::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    height: 2px;
+    width: 100%;
+    background-color: #ccc;
+    transform: translateX(0%);
+    z-index: 1;
+  }
+
+  /* last step without after bar */
+  .step:last-child::after {
+    content: none;
+  }
+  
+  .step.completed {
+    color: #28a745;
+  }
+  
+  .step.completed::before {
+    background-color: #28a745;
+  }
+  
+  .step.completed::after {
+    background-color: #28a745;
   }
