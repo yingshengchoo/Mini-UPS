@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/datatypes"
 )
 
 // GET /api/package/user/:username
@@ -54,12 +55,12 @@ func ChangePackageDestination(c *gin.Context) {
 // POST /api/package/create
 func CreatePackage(c *gin.Context) {
 	var req struct {
-		PackageID   string `json:"package_id" binding:"required"`
-		Username    string `json:"username" binding:"required"`
-		Items       string `json:"items" binding:"required"`
-		DestX       int    `json:"destination_x" binding:"required"`
-		DestY       int    `json:"destination_y" binding:"required"`
-		WarehouseID uint   `json:"warehouse_id" binding:"required"`
+		PackageID   string         `json:"package_id" binding:"required"`
+		Username    string         `json:"username" binding:"required"`
+		Items       datatypes.JSON `json:"items" binding:"required"`
+		DestX       int            `json:"destination_x" binding:"required"`
+		DestY       int            `json:"destination_y" binding:"required"`
+		WarehouseID uint           `json:"warehouse_id" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})

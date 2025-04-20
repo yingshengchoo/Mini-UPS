@@ -18,6 +18,8 @@ func InitRouter() *gin.Engine {
 	router.Static("/home", "./frontend/home")
 	router.Static("/login", "./frontend/login")
 	router.Static("/register", "./frontend/register")
+	router.Static("/devtool", "./frontend/devtool")
+
 	router.GET("/users/:username", controller.GetUserByUsername)
 
 	apiGroup := router.Group("/api")

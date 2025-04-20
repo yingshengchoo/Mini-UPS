@@ -3,6 +3,8 @@ package service
 import (
 	"mini-ups/dao"
 	"mini-ups/model"
+
+	"gorm.io/datatypes"
 )
 
 // Returns basic info of packages belonging to a user
@@ -28,7 +30,7 @@ func ChangePackageDestination(packageID string, newCoord model.Coordinate) (stri
 }
 
 // Creates a new package
-func CreatePackage(package_id string, username string, items string, dest_x int, dest_y int, warehouse_id uint) error {
+func CreatePackage(package_id string, username string, items datatypes.JSON, dest_x int, dest_y int, warehouse_id uint) error {
 	return dao.CreatePackage(model.NewPackage(
 		model.PackageID(package_id),
 		username,
