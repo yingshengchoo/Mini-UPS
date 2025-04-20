@@ -153,7 +153,7 @@ async function getPackageInfo() {
     container.style.display = "block";
 
     // refresh data
-    // container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
+    container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
     //packages = fakeData
 
     packages.forEach(pkg => {
@@ -173,7 +173,6 @@ async function getPackageInfo() {
       highlightProgressBar(progressBar, pkg.status);
       progressBar.style.display = 'block'
 
-      container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
       container.appendChild(clone);
     });
   }
