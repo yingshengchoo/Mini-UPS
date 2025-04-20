@@ -1,18 +1,21 @@
 package controller
 
 import (
+	"mini-ups/model"
+	"mini-ups/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type RequestAction struct {
-	Action string `json:"action" binding:"required"`
-}
-
 // POST /api/ups
 func ParseAction(c *gin.Context) {
-	var req RequestAction
+
+	// json with action
+	var req struct {
+		Action string `json:"action" binding:"required"`
+	}
+
 	// parse action
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no action in json"})
@@ -49,9 +52,10 @@ func ParseAction(c *gin.Context) {
 	}
 }
 
+// TODO test
 // POST /api/ups/pickup
 func PickUp(c *gin.Context) {
-	// TODO implement
+	CreatePackage(c)
 }
 
 // POST /api/ups/package-ready
@@ -64,7 +68,29 @@ func LoadPackage(c *gin.Context) {
 	// TODO implement
 }
 
+// TODO test
 // POST /api/ups/status
 func CheckStatus(c *gin.Context) {
-	// TODO implement
+	// json with action
+	var req struct {
+		PackageID string `json:"package_id" binding:"required"`
+	}
+
+	// get package info
+	pack, err := service.GetPackageInfo(req.PackageID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Package not found"})
+		return
+	}
+
+	// construct response
+	response := struct {
+		model.Package
+		Action string `json:"action"`
+	}{
+		Package: *pack,
+		Action:  "query_status_response",
+	}
+
+	c.JSON(http.StatusOK, response)
 }
