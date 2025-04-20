@@ -1,0 +1,31 @@
+.package-item {
+    background: #ffffff;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-left: 5px solid #4a90e2;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .package-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+  
+  .package-item p {
+    margin: 6px 0;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+  }
+  
+  .package-item p strong {
+    color: #4a90e2;
+    font-weight: 600;
+  }
+  
+  .package-item hr {
+    margin-top: 12px;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+  }

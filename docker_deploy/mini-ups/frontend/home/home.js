@@ -1,3 +1,4 @@
+// track button
 async function track() {
     const trackingNumber = document.getElementById('trackingNumber').value;
     const resultEl = document.getElementById('result');
@@ -15,9 +16,12 @@ async function track() {
     }
   }
 
+
+// logout button
 async function logout() {
 
   try {
+
     const res = await fetch(`/api/user/logout`,{
       method:"POST"
     });
@@ -28,38 +32,117 @@ async function logout() {
   }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  fetch('/api/user/info',{
-    method:"GET",
-    credentials:"include"
-  })
-    .then(response => {
-      if (response.userlogined === false) {
-        // show buttons
-        const btn_login = document.getElementById('btn-login');
-        const btn_register = document.getElementById('btn-register');
-        btn_login.style.display = "block"
-        btn_register.style.display = "block"
+// load user info when load this page
+window.addEventListener('DOMContentLoaded', getUserInfo)
+window.addEventListener('DOMContentLoaded', getPackageInfo)
 
-        // hide login status
-        document.getElementById("login-status").style.display = "none"
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.userlogined) {
-        // logined, show info
-        const status = document.getElementById("login-status")
-        status.innerText = "Logined as: "+data.username;
-        status.style.display = 'block'
-        document.getElementById("btn-logout").style.display = "block"
 
-        // hide buttons
-        document.getElementById('btn-login').style.display = "none";
-        document.getElementById('btn-register').style.display = "none";
-      }
+// get user info
+async function getUserInfo() {
+
+  try{
+    // get user info
+    const response = await fetch('/api/user/info',{
+      method:"GET",
+      credentials:"include"
     })
-    .catch(error => {
-      console.error("failed to request", error);
+
+    const data = await response.json()
+
+    // check login status
+    if (data.userlogined === false) {
+      // show buttons
+      const btn_login = document.getElementById('btn-login');
+      const btn_register = document.getElementById('btn-register');
+      btn_login.style.display = "block"
+      btn_register.style.display = "block"
+
+      // hide login status
+      document.getElementById("login-status").style.display = "none"
+    }else{
+      // logined, show info
+      const status = document.getElementById("login-status")
+      status.innerText = "Logined as: "+data.username;
+      status.style.display = 'block'
+      document.getElementById("btn-logout").style.display = "block"
+
+      // hide buttons
+      document.getElementById('btn-login').style.display = "none";
+      document.getElementById('btn-register').style.display = "none";
+    }
+
+  }catch(error) {
+    console.error("failed to request", error);
+  }
+}
+
+// get package info
+async function getPackageInfo() {
+  try{
+    // get package info
+    const response = await fetch('/api/package/info',{
+      method:"GET",
+      credentials:"include"
+    })
+    // TODO render package info
+    // use fake data now
+    sessionStorage.setItem("packages", fakeData);
+    
+    const container = document.getElementById('user-packages');
+    const template = document.getElementById('package-template');
+    const title = document.getElementById('pacakge-title');
+
+    // show title
+    title.style.display = "block";
+    container.style.display = "block";
+
+    // refresh data
+    container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
+    packages = fakeData
+    packages.forEach(pkg => {
+      const clone = template.cloneNode(true);
+      clone.id = "";
+      clone.style.display = "block";
+
+      clone.querySelector('.package-id').textContent = pkg.id;
+      clone.querySelector('.package-contents').textContent = pkg.content;
+      clone.querySelector('.package-address').textContent = pkg.address;
+      clone.querySelector('.package-status').textContent = pkg.status;
+      clone.querySelector('.package-location').textContent = pkg.location;
+      clone.querySelector('.package-updatedAt').textContent = new Date(pkg.updatedAt).toLocaleString();
+
+      container.appendChild(clone);
     });
-});
+  }
+  catch(e){
+    console.error("failed to request", e);
+  }
+}
+
+const fakeData = [
+  {
+    id: 1,
+    name: "Package 1",
+    details: "Fragile items",
+    content: "Electronics",
+    address: "123 Street, City, Country",
+    status: "Shipped",
+    location: "Warehouse A",
+    updatedAt: "2025-04-19T12:30:00"
+  },
+  {
+    id: 2,
+    name: "Package 2",
+    details: "Documents",
+    content: "Paperwork",
+    address: "456 Avenue, City, Country",
+    status: "Pending",
+    location: "Warehouse B",
+    updatedAt: "2025-04-19T14:00:00"
+  }
+];
+
+// sleep for test
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

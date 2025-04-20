@@ -6,6 +6,7 @@
   <title>UPS track system</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/home/home.css" />
 </head>
 <body>
   <header>
@@ -19,11 +20,26 @@
       <div class="result" id="result" style="display: none;"></div>
     </div>
     <div class="card">
+        <!-- show user info -->
         <h2>Track your own</h2>
         <button id="btn-login" onclick="window.location.href='/login/login.html'">Login</button>
         <button id="btn-register" onclick="window.location.href='/register/register.html'">Register</button>
         <div class="result" id="login-status" style="display: none;"></div>
         <button id="btn-logout" onclick="logout()" style="display: none;">Log out</button>
+
+        <!-- show package info -->
+        <h3 id="pacakge-title" style="display: none;">Your packages</h3>
+        <div id="user-packages"  style="display: none;">
+          <div class="package-item" id="package-template" style="display: none;">
+            <p><strong>package ID:</strong> <span class="package-id"></span></p>
+            <p><strong>Contents:</strong> <span class="package-contents"></span></p>
+            <p><strong>Address:</strong> <span class="package-address"></span></p>
+            <p><strong>Status:</strong> <span class="package-status"></span></p>
+            <p><strong>Location:</strong> <span class="package-location"></span></p>
+            <p><strong>Updated At:</strong> <span class="package-updatedAt"></span></p>
+            <hr/>
+          </div>
+        </div>
     </div>
   </main>
 
