@@ -60,7 +60,8 @@ func InitRouter() *gin.Engine {
 			amazonGroup.POST("/", controller.ParseAction)
 			amazonGroup.POST("/pickup", controller.PickUp)
 			amazonGroup.POST("/package-ready", controller.RespondPackageReady)
-			amazonGroup.POST("/load", controller.LoadPackage)
+			amazonGroup.POST("/load", controller.LoadingPackage)
+			amazonGroup.POST("/deliver", controller.Deliver)
 			amazonGroup.GET("/status", controller.CheckStatus)
 		}
 	}

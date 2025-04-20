@@ -34,9 +34,14 @@ func ParseAction(c *gin.Context) {
 			RespondPackageReady(c)
 			break
 		}
-	case "load_package":
+	case "loading_package":
 		{
-			LoadPackage(c)
+			LoadingPackage(c)
+			break
+		}
+	case "package_loaded":
+		{
+			Deliver(c)
 			break
 		}
 	case "query_status":
@@ -52,20 +57,23 @@ func ParseAction(c *gin.Context) {
 	}
 }
 
-// TODO test
 // POST /api/ups/pickup
 func PickUp(c *gin.Context) {
 	CreatePackage(c)
+	// TODO implement
+	// goroutine send world pickup
 }
 
+// seems unnecessary
 // POST /api/ups/package-ready
 func RespondPackageReady(c *gin.Context) {
 	// TODO implement
 }
 
 // POST /api/ups/load
-func LoadPackage(c *gin.Context) {
+func LoadingPackage(c *gin.Context) {
 	// TODO implement
+	// just update the status info
 }
 
 // TODO test
@@ -93,4 +101,10 @@ func CheckStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// deliever packages (a truck)
+// POST /api/ups/deliver
+func Deliver(c *gin.Context) {
+	// TODO implement
 }
