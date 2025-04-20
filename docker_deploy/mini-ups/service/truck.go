@@ -1,0 +1,27 @@
+package service
+
+import (
+	"fmt"
+	"mini-ups/dao"
+	"mini-ups/model"
+)
+
+// register a truck
+func RegisterTruck(truckID model.TruckID, x int, y int) error {
+	return dao.CreateTruck(model.NewTruck(
+		truckID,
+		x, y,
+		model.TruckStatus.IDLE,
+	))
+}
+
+// get truck by id
+func GetTruckByID(truckID model.TruckID) (*model.Truck, error) {
+	return dao.GetTruckByID(truckID)
+}
+
+// TODO update truck info
+// communicate with world
+func GetUpdatedTruckInfo(truckID model.TruckID) (*model.Truck, error) {
+	return nil, fmt.Errorf("need to implement")
+}
