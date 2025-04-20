@@ -39,12 +39,12 @@ func (p *Package) SetCoord(x int, y int) {
 	p.Destination.Y = y
 }
 
-func NewPackage(packageID PackageID, username string, items string, x int, y int, warehouseID uint, status PackageStatus) *Package {
+func NewPackage(packageID PackageID, username string, items datatypes.JSON, x int, y int, warehouseID uint, status PackageStatus) *Package {
 	return &Package{
 		ID:          packageID,
 		Username:    username,
 		TruckID:     nil, // or pointer to uint if assigned
-		Items:       datatypes.JSON([]byte(items)),
+		Items:       items,
 		Destination: Coordinate{X: x, Y: y},
 		WarehouseID: warehouseID,
 		Status:      status, // use constant if defined

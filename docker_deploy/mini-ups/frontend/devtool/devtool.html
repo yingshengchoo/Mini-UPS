@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Package</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+
+    .card h2 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .message {
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .message.success {
+      color: green;
+    }
+
+    .message.error {
+      color: red;
+    }
+
+    .item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    }
+
+    .remove-btn {
+    background: #dc3545;
+    color: white;
+    width: 48px;
+    height: 30px;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Create Package</h2>
+    <form id="packageForm">
+      <div class="form-group">
+        <label for="package_id">Package ID</label>
+        <input type="text" id="package_id" required />
+      </div>
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" required />
+      </div>
+      <div class="form-group">
+        <!-- <input type="text" id="items" required /> -->
+        <div class="items">
+            <label>Items:</label>
+            <div id="itemsContainer">
+              <!-- dynamic item inputs go here -->
+            </div>
+            <button type="button" onclick="addItem()">+ Add Item</button>
+          </div>
+      </div>
+      <div class="form-group">
+        <label for="destination_x">Destination X</label>
+        <input type="number" id="destination_x" required />
+      </div>
+      <div class="form-group">
+        <label for="destination_y">Destination Y</label>
+        <input type="number" id="destination_y" required />
+      </div>
+      <div class="form-group">
+        <label for="warehouse_id">Warehouse ID</label>
+        <input type="number" id="warehouse_id" required />
+      </div>
+      <button type="submit">Submit</button>
+      <div class="message" id="message"></div>
+    </form>
+  </div>
+
+  <script>
+
+
+    function addItem(name = "", quantity = "") {
+      const container = document.getElementById("itemsContainer");
+      const row = document.createElement("div");
+      row.className = "item-row";
+
+      row.innerHTML = `
+        <input placeholder="Item Name" value="${name}" />
+        <input placeholder="Quantity" type="number" value="${quantity}" />
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+      `;
+
+      container.appendChild(row);
+    }
+
+
+
+    const form = document.getElementById('packageForm');
+    const messageEl = document.getElementById('message');
+
+    
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // get all items
+      const itemRows = document.querySelectorAll("#itemsContainer .item-row");
+      const items = Array.from(itemRows).map(row => {
+        const inputs = row.querySelectorAll("input");
+        return {
+          name: inputs[0].value,
+          quantity: parseInt(inputs[1].value)
+        };
+      });
+
+      const data = {
+        package_id: document.getElementById('package_id').value,
+        username: document.getElementById('username').value,
+        items: items,
+        destination_x: parseInt(document.getElementById('destination_x').value),
+        destination_y: parseInt(document.getElementById('destination_y').value),
+        warehouse_id: parseInt(document.getElementById('warehouse_id').value),
+      };
+
+      try {
+        const res = await fetch('/api/package/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          messageEl.textContent = result.message;
+          messageEl.className = 'message success';
+        } else {
+          messageEl.textContent = result.error || 'Something went wrong.';
+          messageEl.className = 'message error';
+        }
+      } catch (err) {
+        messageEl.textContent = 'Network error.';
+        messageEl.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>
