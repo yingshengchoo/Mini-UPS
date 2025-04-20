@@ -80,12 +80,21 @@ async function getUserInfo() {
 async function getPackageInfo() {
   try{
     // TODO get package info
-    const response = await fetch('/api/package/info',{
+    const response = await fetch('/api/package/user/' + 1,{  // 有沒有可以拿現在User ID 的 function?
       method:"GET",
       credentials:"include"
     })
-    // use fake data now
-    sessionStorage.setItem("packages", fakeData);
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const packages = await response.json();
+    sessionStorage.setItem("packages", JSON.stringify(packages));
+
+
+    // // use fake data now
+    // sessionStorage.setItem("packages", fakeData);
 
     const container = document.getElementById('user-packages');
     const template = document.getElementById('package-template');

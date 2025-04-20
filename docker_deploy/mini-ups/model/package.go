@@ -31,12 +31,6 @@ const (
 	StatusDelivered        PackageStatus = "delivered"
 )
 
-type Item struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Quantity    int    `json:"quantity"`
-}
-
 func (p *Package) SetCoord(x int, y int) {
 	p.Destination.X = x
 	p.Destination.Y = y

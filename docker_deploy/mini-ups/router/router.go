@@ -41,8 +41,14 @@ func InitRouter() *gin.Engine {
 		//package api
 		packageGroup := apiGroup.Group("/package")
 		{
-			packageGroup.POST("/register", controller.RegisterPackage)
-			packageGroup.GET("/info", controller.GetPackagesByUser) // or GetCurrentUserPackages if session-based
+			packageGroup.GET("/user/:userID", controller.GetPackagesForUser)
+			packageGroup.GET("/info/:packageID", controller.GetPackageInfo)
+			packageGroup.PUT("/destination", controller.ChangePackageDestination)
+			packageGroup.POST("/create", controller.CreatePackage)
+			packageGroup.PUT("/assign-truck", controller.LinkTruckToPackage)
+			packageGroup.PUT("/status", controller.ChangePackageStatus)
+			packageGroup.GET("/warehouse/:packageID", controller.GetWarehouseID)
+
 		}
 	}
 	return router
