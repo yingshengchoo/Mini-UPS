@@ -34,4 +34,9 @@ func initTables() {
 	if err != nil {
 		log.Fatal("failed to auto migrate truck:", err)
 	}
+
+	err = DB.AutoMigrate(&model.Package{})
+	if err != nil {
+		log.Fatal("failed to auto migrate truck:", err)
+	}
 }

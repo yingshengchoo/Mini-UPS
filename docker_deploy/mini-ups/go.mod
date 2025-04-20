@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	golang.org/x/crypto v0.37.0
 	gopkg.in/yaml.v3 v3.0.1
+	gorm.io/datatypes v1.2.5
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
 )
@@ -50,6 +51,5 @@ require (
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
-	gorm.io/datatypes v1.2.5 // indirect
 	gorm.io/driver/mysql v1.5.6 // indirect
 )

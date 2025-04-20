@@ -6,8 +6,8 @@ import (
 )
 
 // Returns basic info of packages belonging to a user
-func GetPackagesForUser(userID uint) ([]model.Package, error) {
-	return dao.GetPackagesByUser(userID)
+func GetPackagesForUser(username string) ([]model.Package, error) {
+	return dao.GetPackagesByUser(username)
 }
 
 // Returns basic info of a single package
@@ -28,10 +28,10 @@ func ChangePackageDestination(packageID string, newCoord model.Coordinate) (stri
 }
 
 // Creates a new package
-func CreatePackage(package_id string, user_id uint, items string, dest_x int, dest_y int, warehouse_id uint) error {
+func CreatePackage(package_id string, username string, items string, dest_x int, dest_y int, warehouse_id uint) error {
 	return dao.CreatePackage(model.NewPackage(
 		model.PackageID(package_id),
-		user_id,
+		username,
 		items,
 		dest_x, dest_y,
 		warehouse_id,

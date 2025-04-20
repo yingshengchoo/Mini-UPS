@@ -5,22 +5,17 @@ import (
 	"mini-ups/model"
 	"mini-ups/service"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-// GET /api/package/user/:userID
+// GET /api/package/user/:username
 func GetPackagesForUser(c *gin.Context) {
-	userIDStr := c.Param("userID")
-	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	username := c.Param("username")
+	packages, err := service.GetPackagesForUser(username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
-	uintID := uint(userID)
-	packages, err := service.GetPackagesForUser(uintID)
-	if err != nil {
+		fmt.Println("GetPackagesForUser error:", err) //debug
+
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -60,7 +55,7 @@ func ChangePackageDestination(c *gin.Context) {
 func CreatePackage(c *gin.Context) {
 	var req struct {
 		PackageID   string `json:"package_id" binding:"required"`
-		UserID      uint   `json:"user_id" binding:"required"`
+		Username    string `json:"username" binding:"required"`
 		Items       string `json:"items" binding:"required"`
 		DestX       int    `json:"destination_x" binding:"required"`
 		DestY       int    `json:"destination_y" binding:"required"`
@@ -70,7 +65,7 @@ func CreatePackage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	err := service.CreatePackage(req.PackageID, req.UserID, req.Items, req.DestX, req.DestY, req.WarehouseID)
+	err := service.CreatePackage(req.PackageID, req.Username, req.Items, req.DestX, req.DestY, req.WarehouseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

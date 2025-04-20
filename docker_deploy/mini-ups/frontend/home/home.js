@@ -1,20 +1,26 @@
 // track button
 async function track() {
-    const trackingNumber = document.getElementById('trackingNumber').value;
-    const resultEl = document.getElementById('result');
-    resultEl.style.display = 'block';
-    resultEl.innerText = 'tracking...';
 
-    try {
-      const res = await fetch(`/api/track/${trackingNumber}`);
-      if (!res.ok) throw new Error('Fail to track');
+  const trackingNumber = document.getElementById('trackingNumber').value;
+  const resultEl = document.getElementById('result');
+  resultEl.style.display = 'block';
+  resultEl.innerText = 'tracking...';
 
-      const data = await res.json();
-      resultEl.innerText = JSON.stringify(data, null, 2);
-    } catch (e) {
-      resultEl.innerText = 'Failed to track';
-    }
+  try {
+    const res = await fetch(`/api/pacakge/info/${trackingNumber}`);
+    if (!res.ok) throw new Error('Fail to track');
+
+    const data = await res.json();
+    resultEl.innerText =
+    `Package ID: ${data.package_id}\n` +
+    `Contents: ${JSON.parse(data.items).map(i => `${i.qty} x ${i.name}`).join(', ')}\n` +
+    `Delivery Address: (${data.coord.x}, ${data.coord.y})\n` +
+    `Status: ${data.status}\n` +
+    `Updated At: ${new Date(data.updated_at).toLocaleString()}`;
+  } catch (e) {
+    resultEl.innerText = 'Failed to track';
   }
+}
 
 
 // logout button
@@ -33,9 +39,12 @@ async function logout() {
 }
 
 // load user info when load this page
-window.addEventListener('DOMContentLoaded', getUserInfo)
-window.addEventListener('DOMContentLoaded', getPackageInfo)
+window.addEventListener('DOMContentLoaded', init);
 
+async function init() {
+  await getUserInfo();
+  await getPackageInfo();
+}
 
 // get user info
 async function getUserInfo() {
@@ -60,6 +69,8 @@ async function getUserInfo() {
       // hide login status
       document.getElementById("login-status").style.display = "none"
     }else{
+      sessionStorage.setItem("username", data.username);
+
       // logined, show info
       const status = document.getElementById("login-status")
       status.innerText = "Logined as: "+data.username;
@@ -80,7 +91,9 @@ async function getUserInfo() {
 async function getPackageInfo() {
   try{
     // TODO get package info
-    const response = await fetch('/api/package/user/' + 1,{  // 有沒有可以拿現在User ID 的 function?
+    const userID = sessionStorage.getItem("username")
+    //console.log("User info data:", data);
+    const response = await fetch(`/api/package/user/${userID}`,{  // 有沒有可以拿現在User ID 的 function?
       method:"GET",
       credentials:"include"
     })
@@ -94,7 +107,7 @@ async function getPackageInfo() {
 
 
     // // use fake data now
-    // sessionStorage.setItem("packages", fakeData);
+    sessionStorage.setItem("packages", packages);
 
     const container = document.getElementById('user-packages');
     const template = document.getElementById('package-template');
@@ -106,18 +119,20 @@ async function getPackageInfo() {
 
     // refresh data
     container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
-    packages = fakeData
+    //packages = fakeData
+
     packages.forEach(pkg => {
       const clone = template.cloneNode(true);
       clone.id = "";
       clone.style.display = "block";
 
-      clone.querySelector('.package-id').textContent = pkg.id;
-      clone.querySelector('.package-contents').textContent = pkg.content;
-      clone.querySelector('.package-address').textContent = pkg.address;
+      clone.querySelector('.package-id').textContent = pkg.package_id;
+      clone.querySelector('.package-contents').textContent = `${formatItems(pkg.items)}`;
+      clone.querySelector('.package-address').textContent = `(${pkg.coord.x}, ${pkg.coord.y})`;
       clone.querySelector('.package-status').textContent = pkg.status;
-      clone.querySelector('.package-location').textContent = pkg.location;
-      clone.querySelector('.package-updatedAt').textContent = new Date(pkg.updatedAt).toLocaleString();
+      clone.querySelector('.package-warehouse').textContent = pkg.warehouse_id; //maybe not display?
+      clone.querySelector('.package-updatedAt').textContent = `${formatDate(pkg.updated_at)}`;
+
 
       const progressBar = clone.querySelector(".fancy-progress-bar");
       highlightProgressBar(progressBar, pkg.status);
@@ -171,6 +186,23 @@ const fakeData = [
     updatedAt: "2025-04-19T14:00:00"
   }
 ];
+
+//helper function for displaying items
+const formatItems = (items) => {
+  if (!Array.isArray(items)) {
+    try {
+      items = JSON.parse(items);
+    } catch (e) {
+      return String(items);
+    }
+  }
+  return items.map(item => `${item.qty} x ${item.name}`).join(', ');
+};
+
+const formatDate = (dateStr) => {
+  const date = new Date(dateStr);
+  return date.toLocaleString(); // e.g., "4/20/2025, 2:23:43 PM"
+};
 
 // sleep for test
 function sleep(ms) {

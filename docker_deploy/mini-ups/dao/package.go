@@ -1,16 +1,20 @@
 package dao
 
 import (
+	"fmt"
 	"mini-ups/db"
 	"mini-ups/model"
 )
 
 // retrievs all the packages belonging to userID
-func GetPackagesByUser(userID uint) ([]model.Package, error) {
+func GetPackagesByUser(username string) ([]model.Package, error) {
+	var user model.User
+	if err := db.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("user not found: %v", err)
+	}
 	var packages []model.Package
 	if err := db.DB.
-		Select("ID", "Items", "Destination_X", "Destination_Y", "Status").
-		Where("user_id = ?", userID).
+		Where("username = ?", username).
 		Find(&packages).Error; err != nil {
 		return nil, err
 	}
@@ -19,9 +23,13 @@ func GetPackagesByUser(userID uint) ([]model.Package, error) {
 
 // retrives the pacakge of the given packageID
 func GetPackagesByPackageID(packageID string) (*model.Package, error) {
+	var p model.Package
+	if err := db.DB.Where("package_id = ?", packageID).First(&p).Error; err != nil {
+		return nil, fmt.Errorf("user not found: %v", err)
+	}
 	var pack model.Package
 	if err := db.DB.
-		Where("ID = ?", packageID).
+		Where("package_id = ?", packageID).
 		First(&pack).Error; err != nil {
 		return nil, err
 	}

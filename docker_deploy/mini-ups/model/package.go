@@ -1,19 +1,22 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/datatypes"
 )
 
 type Package struct {
 	ID          PackageID      `gorm:"primaryKey" json:"package_id"`
-	UserID      uint           `gorm:"not null" json:"user_id"`
-	User        User           `gorm:"foreignKey:UserID"`
+	Username    string         `gorm:"not null" json:"username"`
+	User        User           `gorm:"foreignKey:Username;references:Username"`
 	TruckID     *TruckID       `json:"truck_id"` // nullable
 	Truck       *Truck         `gorm:"foreignKey:TruckID"`
 	Items       datatypes.JSON `json:"items"`
 	Destination Coordinate     `gorm:"not null;embedded" json:"coord"`
 	WarehouseID uint           `gorm:"not null" json:"warehouse_id"`
 	Status      PackageStatus  `gorm:"type:varchar(20)" json:"status"`
+	UpdatedAt   time.Time      `json:"updated_at"`
 }
 
 type PackageID string
@@ -36,10 +39,10 @@ func (p *Package) SetCoord(x int, y int) {
 	p.Destination.Y = y
 }
 
-func NewPackage(packageID PackageID, userID uint, items string, x int, y int, warehouseID uint, status PackageStatus) *Package {
+func NewPackage(packageID PackageID, username string, items string, x int, y int, warehouseID uint, status PackageStatus) *Package {
 	return &Package{
 		ID:          packageID,
-		UserID:      userID,
+		Username:    username,
 		TruckID:     nil, // or pointer to uint if assigned
 		Items:       datatypes.JSON([]byte(items)),
 		Destination: Coordinate{X: x, Y: y},
