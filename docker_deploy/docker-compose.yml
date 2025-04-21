@@ -3,7 +3,7 @@ services:
   mydb:
     image: postgres:12-alpine3.15
     environment:
-      POSTGRES_PASSWORD: abc123
+      POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: worldSim
     restart: always
@@ -27,7 +27,7 @@ services:
       - DEBUG=False
       - DJANGO_SECRET_KEY=your-secret-key
     depends_on:
-      - db
+      - mydb
     networks:
       - mynetwork
 
