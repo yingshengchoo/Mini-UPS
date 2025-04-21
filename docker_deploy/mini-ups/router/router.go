@@ -18,6 +18,8 @@ func InitRouter() *gin.Engine {
 	router.Static("/home", "./frontend/home")
 	router.Static("/login", "./frontend/login")
 	router.Static("/register", "./frontend/register")
+	router.Static("/devtool", "./frontend/devtool")
+
 	router.GET("/users/:username", controller.GetUserByUsername)
 
 	apiGroup := router.Group("/api")
@@ -49,6 +51,18 @@ func InitRouter() *gin.Engine {
 			packageGroup.PUT("/status", controller.ChangePackageStatus)
 			packageGroup.GET("/warehouse/:packageID", controller.GetWarehouseID)
 
+		}
+
+		// ups side api for amazon
+		// parse json's action to different further api
+		amazonGroup := apiGroup.Group("/ups")
+		{
+			amazonGroup.POST("/", controller.ParseAction)
+			amazonGroup.POST("/pickup", controller.PickUp)
+			amazonGroup.POST("/package-ready", controller.RespondPackageReady)
+			amazonGroup.POST("/load", controller.LoadingPackage)
+			amazonGroup.POST("/deliver", controller.Deliver)
+			amazonGroup.GET("/status", controller.CheckStatus)
 		}
 	}
 	return router

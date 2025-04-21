@@ -8,20 +8,49 @@ async function track() {
 
   try {
     const res = await fetch(`/api/package/info/${trackingNumber}`);
-    if (!res.ok) throw new Error('Fail to track');
+    if (!res.ok) {
+      document.getElementById('track-package').style.display = "none";
+      throw new Error('Fail to track');
+    }
 
     const data = await res.json();
 
     console.log("tracking response:", data);
 
-    resultEl.innerHTML = `
-    <p><strong>Package ID:</strong> ${data.package_id}</p>
-    <p><strong>Contents:</strong> ${(Array.isArray(data.items) ? data.items : JSON.parse(data.items))
-      .map(i => `${i.qty} x ${i.name}`).join(', ')}</p>
-    <p><strong>Delivery Address:</strong> (${data.coord.x}, ${data.coord.y})</p>
-    <p><strong>Status:</strong> ${data.status}</p>
-    <p><strong>Updated At:</strong> ${new Date(data.updated_at).toLocaleString()}</p>`;
 
+    const container = document.getElementById('track-package');
+    const template = document.getElementById('package-template');
+    const title = document.getElementById('pacakge-title');
+
+    // show title
+    title.style.display = "block";
+    container.style.display = "block";
+
+    // refresh data
+    container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
+
+    const clone = template.cloneNode(true);
+    clone.id = "";
+    clone.style.display = "block";
+
+    pkg = data
+    clone.querySelector('.package-id').textContent = pkg.package_id;
+    clone.querySelector('.package-contents').textContent = `${formatItems(pkg.items)}`;
+    clone.querySelector('.package-address').textContent = `(${pkg.coord.x}, ${pkg.coord.y})`;
+    clone.querySelector('.package-status').textContent = pkg.status;
+    clone.querySelector('.package-warehouse').textContent = pkg.warehouse_id; //maybe not display?
+    clone.querySelector('.package-updatedAt').textContent = `${formatDate(pkg.updated_at)}`;
+
+
+    const progressBar = clone.querySelector(".fancy-progress-bar");
+    highlightProgressBar(progressBar, pkg.status);
+    progressBar.style.display = 'block'
+
+    // show this ele
+    container.appendChild(clone);
+    
+    // hide message bar
+    resultEl.style.display = 'none';
   } catch (e) {
     resultEl.innerText = 'Failed to track';
   }
@@ -144,7 +173,6 @@ async function getPackageInfo() {
       highlightProgressBar(progressBar, pkg.status);
       progressBar.style.display = 'block'
 
-      // clone.appendChild(progressBar)
       container.appendChild(clone);
     });
   }
