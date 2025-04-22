@@ -11,7 +11,7 @@ import (
 
 var UPSConn net.Conn
 
-const HOST = "vcm-47478.vm.duke.edu:12345"
+const HOST = "vcm-47478.vm.duke.edu:12345" // Changed based on HOST
 
 var seqnum int64
 

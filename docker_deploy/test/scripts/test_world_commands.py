@@ -158,7 +158,6 @@ def simulate_ups_pickup(sock, seq_start=1):
         for completed in response.completions:
             if completed.status == "ARRIVE WAREHOUSE":
                 print("Package packed and ready:", completed)
-                return True
 
         time.sleep(0.5)
 
@@ -268,10 +267,10 @@ def main():
 
     simulate_amazon_flow(amazon_sock)
     simulate_ups_pickup(ups_sock)
-    simulate_amazon_load_and_put(amazon_sock)
-    simulate_ups_deliver(ups_sock)
-    simulate_amazon_disconnect(amazon_sock)
-    simulate_ups_disconnect(ups_sock)
+    # simulate_amazon_load_and_put(amazon_sock)
+    # simulate_ups_deliver(ups_sock)
+    # simulate_amazon_disconnect(amazon_sock)
+    # simulate_ups_disconnect(ups_sock)
     amazon_sock.close()
     ups_sock.close()
     print("Simulation complete")

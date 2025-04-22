@@ -70,7 +70,7 @@ func sendAmazonPost(payload map[string]interface{}) error {
 	}
 
 	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Post(amazonURL, "application/json", bytes.NewBuffer(data))
+	resp, err := client.Post(amazonURL, "application/json", bytes.NewBuffer(data)) // Change URL
 	if err != nil {
 		return fmt.Errorf("HTTP POST failed: %w", err)
 	}

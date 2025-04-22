@@ -298,7 +298,7 @@ func LoadedPackage(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"action":         "delivery_started", // 不知道這裡是不是該這樣寫
+			"action":         "package_loaded_response", // 不知道這裡是不是該這樣寫
 			"message_id":     uuid.New().String(),
 			"in_response_to": req.MessageID,
 			"status":         "error",
@@ -328,14 +328,6 @@ func LoadedPackage(c *gin.Context) {
 		return
 	}
 
-	resp := gin.H{
-		"action":         "package_delivered_response",
-		"message_id":     uuid.New().String(),
-		"in_response_to": req.MessageID,
-		"status":         "success",
-		"message":        fmt.Sprintf("Package %s marked as ready", req.PackageID),
-	}
-	c.JSON(http.StatusOK, resp)
 }
 
 // deliever packages (a truck)
@@ -349,7 +341,7 @@ func Deliver(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"action":         "delivery_started",
+			"action":         "package_loaded_response",
 			"message_id":     uuid.New().String(),
 			"in_response_to": req.MessageID,
 			"status":         "error",
@@ -370,7 +362,7 @@ func Deliver(c *gin.Context) {
 	err = service.ChangePackageStatus(req.PackageID, model.PackageStatus(model.StatusOutForDelivery))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"action":         "loading_package_response",
+			"action":         "package_loaded_response",
 			"message_id":     uuid.New().String(),
 			"in_response_to": req.MessageID,
 			"status":         "error",
@@ -378,6 +370,15 @@ func Deliver(c *gin.Context) {
 		})
 		return
 	}
+
+	resp := gin.H{
+		"action":         "package_loaded_response",
+		"message_id":     uuid.New().String(),
+		"in_response_to": req.MessageID,
+		"status":         "success",
+		"message":        fmt.Sprintf("Package %s marked as ready", req.PackageID),
+	}
+	c.JSON(http.StatusOK, resp)
 	seqnum := util.GenerateSeqNum() //  <------ 還沒implement丟包 所以沒有存 seqnum request pair. 現在只是assign seqnum 而已
 	service.SendWorldDeliveryRequest(req.PackageID, seqnum)
 	//when world responds with UFinish, notify Amazon <-- happens in the ParseWorldResponse(controller - world.go)
