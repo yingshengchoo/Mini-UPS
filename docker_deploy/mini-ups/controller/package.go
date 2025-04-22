@@ -66,12 +66,12 @@ func CreatePackage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-	err := service.CreatePackage(req.PackageID, req.Username, req.Items, req.DestX, req.DestY, req.WarehouseID)
+	packageID, err := service.CreatePackage(req.PackageID, req.Username, req.Items, req.DestX, req.DestY, req.WarehouseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "Package created successfully"}) //Status 201 for request succeed and a new resource has been created
+	c.JSON(http.StatusCreated, gin.H{"pacakge_id": packageID, "message": "Package created successfully"}) //Status 201 for request succeed and a new resource has been created
 }
 
 // PUT /api/package/assign-truck

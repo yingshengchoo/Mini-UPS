@@ -11,7 +11,7 @@ type Coordinate struct {
 	Y int `json:"y"`
 }
 
-type TruckID int
+type TruckID int32
 type Status string
 
 // truck statuses

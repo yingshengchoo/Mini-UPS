@@ -23,3 +23,22 @@ func GetTruckByID(truckID model.TruckID) (*model.Truck, error) {
 	}
 	return &truck, nil
 }
+
+func GetFirstIdleTruck() (*model.Truck, error) {
+	var truck model.Truck
+	if err := db.DB.Where("status = ?", model.TruckStatus.IDLE).First(&truck).Error; err != nil {
+		return nil, err
+	}
+	return &truck, nil
+}
+
+func UpdateTruckStatus(truckID int, newStatus model.Status) error {
+	var truck model.Truck
+	if err := db.DB.First(&truck, truckID).Error; err != nil {
+		return err
+	}
+
+	truck.Transit(newStatus)
+
+	return db.DB.Save(&truck).Error
+}

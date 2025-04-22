@@ -5,12 +5,13 @@ import (
 	"net"
 
 	"mini-ups/protocol/worldupspb"
+	"mini-ups/util"
 
 	"google.golang.org/protobuf/proto"
 )
 
 // createTruck constructs a UInitTruck given ID, x, and y coordinates
-func createTruck(id, x, y int32) *worldupspb.UInitTruck {
+func CreateTruck(id, x, y int32) *worldupspb.UInitTruck {
 	return &worldupspb.UInitTruck{
 		Id: proto.Int32(id),
 		X:  proto.Int32(x),
@@ -20,7 +21,7 @@ func createTruck(id, x, y int32) *worldupspb.UInitTruck {
 
 // connectUPS connects to UPS with a given worldID and a list of initial trucks
 // This assumes that Amazon connects first. If we connect first, may consider not providing worldID
-func connectUPS(worldID int64, trucks []*worldupspb.UInitTruck) net.Conn {
+func ConnectUPSWithWorldID(worldID int64, trucks []*worldupspb.UInitTruck) net.Conn {
 	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:12345")
 	if err != nil {
 		panic(err)
@@ -32,19 +33,43 @@ func connectUPS(worldID int64, trucks []*worldupspb.UInitTruck) net.Conn {
 		Worldid:  proto.Int64(worldID),
 		Trucks:   trucks,
 	}
-	if err := sendMsg(conn, uconnect); err != nil {
+	if err := util.SendMsg(conn, uconnect); err != nil {
 		panic(err)
 	}
 
 	resp := &worldupspb.UConnected{}
-	if err := recvMsg(conn, resp); err != nil {
+	if err := util.RecvMsg(conn, resp); err != nil {
 		panic(err)
 	}
 	fmt.Println("UConnected:", resp)
 	return conn
 }
 
-func createGoPickupCommand(truckID, whID int32, seqnum int64) *worldupspb.UGoPickup {
+func ConnectUPS(trucks []*worldupspb.UInitTruck) (net.Conn, int64) {
+	conn, err := net.Dial("tcp", util.HOST)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Sending UConnect...")
+
+	aconnect := &worldupspb.UConnect{
+		IsAmazon: proto.Bool(true),
+		Trucks:   trucks,
+	}
+
+	if err := util.SendMsg(conn, aconnect); err != nil {
+		panic(err)
+	}
+
+	resp := &worldupspb.UConnected{}
+	if err := util.RecvMsg(conn, resp); err != nil {
+		panic(err)
+	}
+	fmt.Println("UConnected:", resp)
+	return conn, resp.GetWorldid()
+}
+
+func CreateGoPickupCommand(truckID, whID int32, seqnum int64) *worldupspb.UGoPickup {
 	return &worldupspb.UGoPickup{
 		Truckid: proto.Int32(truckID),
 		Whid:    proto.Int32(whID),
@@ -52,7 +77,7 @@ func createGoPickupCommand(truckID, whID int32, seqnum int64) *worldupspb.UGoPic
 	}
 }
 
-func createDeliveryLocation(packageID int64, x, y int32) *worldupspb.UDeliveryLocation {
+func CreateDeliveryLocation(packageID int64, x, y int32) *worldupspb.UDeliveryLocation {
 	return &worldupspb.UDeliveryLocation{
 		Packageid: proto.Int64(packageID),
 		X:         proto.Int32(x),
@@ -60,7 +85,7 @@ func createDeliveryLocation(packageID int64, x, y int32) *worldupspb.UDeliveryLo
 	}
 }
 
-func makeDelivery(truckID int32, seqnum int64, deliveries []*worldupspb.UDeliveryLocation) *worldupspb.UGoDeliver {
+func MakeDelivery(truckID int32, seqnum int64, deliveries []*worldupspb.UDeliveryLocation) *worldupspb.UGoDeliver {
 	return &worldupspb.UGoDeliver{
 		Truckid:  proto.Int32(truckID),
 		Seqnum:   proto.Int64(seqnum),
@@ -68,7 +93,7 @@ func makeDelivery(truckID int32, seqnum int64, deliveries []*worldupspb.UDeliver
 	}
 }
 
-func createUPSCommands(
+func CreateUPSCommands(
 	pickups []*worldupspb.UGoPickup,
 	deliveries []*worldupspb.UGoDeliver,
 	simspeed uint32,
@@ -86,8 +111,8 @@ func createUPSCommands(
 	}
 }
 
-func sendUPSCommands(conn net.Conn, cmd *worldupspb.UCommands) error {
-	if err := sendMsg(conn, cmd); err != nil {
+func SendUPSCommands(cmd *worldupspb.UCommands) error {
+	if err := util.SendMsg(util.UPSConn, cmd); err != nil {
 		return fmt.Errorf("failed to send UCommands to UPS: %w", err)
 	}
 	fmt.Println("Sent UCommands to UPS:", cmd)

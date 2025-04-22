@@ -20,8 +20,24 @@ func GetTruckByID(truckID model.TruckID) (*model.Truck, error) {
 	return dao.GetTruckByID(truckID)
 }
 
+func GetIDByTruck(truck *model.Truck) (model.TruckID, error) {
+	if truck == nil {
+		return -1, fmt.Errorf("truck is nil")
+	}
+	return truck.ID, nil
+}
+
 // TODO update truck info
 // communicate with world
 func GetUpdatedTruckInfo(truckID model.TruckID) (*model.Truck, error) {
 	return nil, fmt.Errorf("need to implement")
+}
+
+func GetFirstIdleTruck() (*model.Truck, error) {
+	return dao.GetFirstIdleTruck()
+}
+
+func ChangeTruckStatus(truckID int, newStatus model.Status) error {
+	// Add business rules here if needed
+	return dao.UpdateTruckStatus(truckID, newStatus)
 }

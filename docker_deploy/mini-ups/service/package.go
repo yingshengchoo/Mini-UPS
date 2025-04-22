@@ -30,7 +30,7 @@ func ChangePackageDestination(packageID string, newCoord model.Coordinate) (stri
 }
 
 // Creates a new package
-func CreatePackage(package_id string, username string, items datatypes.JSON, dest_x int, dest_y int, warehouse_id uint) error {
+func CreatePackage(package_id string, username string, items datatypes.JSON, dest_x int, dest_y int, warehouse_id uint) (model.PackageID, error) {
 	return dao.CreatePackage(model.NewPackage(
 		model.PackageID(package_id),
 		username,

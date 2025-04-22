@@ -44,8 +44,9 @@ func UpdateDeliveryAddress(packageID string, newCoord model.Coordinate) (int64, 
 }
 
 // Creates a new Package
-func CreatePackage(pack *model.Package) error {
-	return db.DB.Create(pack).Error
+func CreatePackage(pack *model.Package) (model.PackageID, error) {
+	result := db.DB.Create(pack)
+	return pack.ID, result.Error
 }
 
 // Assigns Truck with TruckID to package with PackageID
