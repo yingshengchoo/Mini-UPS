@@ -7,11 +7,14 @@ import (
 	"mini-ups/service"
 	"mini-ups/util"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
 )
+
+//ERROR TYPES 文檔有specify 可能要檢查有沒有用對
 
 // POST /api/ups
 func ParseAction(c *gin.Context) {
@@ -53,6 +56,26 @@ func ParseAction(c *gin.Context) {
 	case "query_status":
 		{
 			CheckStatus(c)
+			break
+		}
+	case "truck_arrived_response":
+		{
+			HandleTruckArrivedResponse(c)
+			break
+		}
+	case "package_delivered_response":
+		{
+			HandlePackageDelieveredResponse(c)
+			break
+		}
+	case "query_status_response":
+		{
+			HandlePackageQueryStatusResponse(c)
+			break
+		}
+	case "redirect_pacakage_response":
+		{
+			HandleRedirectPackageResponse(c)
 			break
 		}
 	default:
@@ -134,7 +157,6 @@ func PickUp(c *gin.Context) {
 	if err != nil {
 		log.Println("Error sending GoPickUp command:", err)
 	}
-	//When World responds --> tell Amazon Truck arrived.
 
 	//respond to Amazon
 	resp := gin.H{
@@ -161,7 +183,6 @@ func LoadingPackage(c *gin.Context) {
 	// TODO implement
 	// just update the status info
 	var req struct {
-		Action      string `json:"action" binding:"required"`
 		MessageID   string `json:"message_id" binding:"required"`
 		PackageID   string `json:"package_id" binding:"required"`
 		TruckID     int    `json:"truck_id" binding:"required"`
@@ -204,28 +225,68 @@ func LoadingPackage(c *gin.Context) {
 // TODO test
 // POST /api/ups/status
 func CheckStatus(c *gin.Context) {
-	// json with action
 	var req struct {
+		Action    string `json:"action" binding:"required"`
+		Timestamp string `json:"timestamp" binding:"required"`
+		MessageID string `json:"message_id" binding:"required"`
 		PackageID string `json:"package_id" binding:"required"`
 	}
 
-	// get package info
-	pack, err := service.GetPackageInfo(req.PackageID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Package not found"})
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"action":         "query_status_response",
+			"timestamp":      time.Now().UTC().Format(time.RFC3339),
+			"message_id":     uuid.New().String(),
+			"in_response_to": req.MessageID,
+			"status":         "error",
+			"message":        "Invalid request format: " + err.Error(),
+		})
 		return
 	}
 
-	// construct response
-	response := struct {
-		model.Package
-		Action string `json:"action"`
-	}{
-		Package: *pack,
-		Action:  "query_status_response",
+	// Query package from DB
+	pkg, err := service.GetPackageInfo(req.PackageID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"action":         "query_status_response",
+			"timestamp":      time.Now().UTC().Format(time.RFC3339),
+			"message_id":     uuid.New().String(),
+			"in_response_to": req.MessageID,
+			"status":         "error",
+			"message":        "Package not found",
+		})
+		return
 	}
 
-	c.JSON(http.StatusOK, response)
+	// Default truck info
+	var truckID int
+	var truckStatus string
+	var truckLocation = gin.H{"x": nil, "y": nil}
+
+	if pkg.TruckID != nil {
+		truck, err := service.GetTruckByID(*pkg.TruckID)
+		if err == nil {
+			truckID = int(truck.ID)
+			truckStatus = string(truck.Status)
+			truckLocation = gin.H{
+				"x": truck.Coord.X,
+				"y": truck.Coord.Y,
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"action":         "query_status_response",
+		"timestamp":      time.Now().UTC().Format(time.RFC3339),
+		"message_id":     uuid.New().String(),
+		"in_response_to": req.MessageID,
+		"status":         "success",
+		"package_status": string(pkg.Status),
+		"truck_id":       truckID,
+		"truck_status":   truckStatus,
+		"truck_location": truckLocation,
+		"message":        fmt.Sprintf("Status for package %s retrieved", req.PackageID),
+	})
 }
 
 func LoadedPackage(c *gin.Context) {
@@ -297,7 +358,7 @@ func Deliver(c *gin.Context) {
 		return
 	}
 
-	err := service.ChangeTruckStatus(req.TruckID, model.TruckStatus.LOADED)
+	err := service.ChangeTruckStatus(req.TruckID, model.TruckStatus.DELIVERING)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
@@ -320,4 +381,71 @@ func Deliver(c *gin.Context) {
 	seqnum := util.GenerateSeqNum() //  <------ 還沒implement丟包 所以沒有存 seqnum request pair. 現在只是assign seqnum 而已
 	service.SendWorldDeliveryRequest(req.PackageID, seqnum)
 	//when world responds with UFinish, notify Amazon <-- happens in the ParseWorldResponse(controller - world.go)
+}
+
+// Simply checks that the response is in the right format.
+func HandleActionResponse(c *gin.Context) {
+	var req struct {
+		MessageID    string `json:"message_id" binding:"required"`
+		Status       string `json:"status" binding:"required"`
+		InResponseTo string `json:"in_response_to" binding:"required"`
+		Message      string `json:"message" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON format"})
+		return
+	}
+}
+
+func HandleTruckArrivedResponse(c *gin.Context) {
+	HandleActionResponse(c)
+	//SUCCESS 需要做什麼嗎
+
+	//如果Error 重寄?
+	var req struct {
+		Status string `json:"status" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if req.Status == "error" {
+		//Missing truckID + warehouseID
+		//service.NotifyAmazonTruckArrived() <-- 如果重寄我們需要 存我們send 的JSON?
+	}
+}
+
+func HandlePackageDelieveredResponse(c *gin.Context) {
+	HandleActionResponse(c)
+	//跟上面一樣
+}
+func HandleRedirectPackageResponse(c *gin.Context) {
+	HandleActionResponse(c)
+	//跟上面一樣
+}
+
+// 沒有用到
+func HandlePackageQueryStatusResponse(c *gin.Context) {
+	var req struct {
+		Action        string `json:"action" binding:"required"`
+		Timestamp     string `json:"timestamp" binding:"required"`
+		MessageID     string `json:"message_id" binding:"required"`
+		InResponseTo  string `json:"in_response_to" binding:"required"`
+		Status        string `json:"status" binding:"required"`
+		PackageStatus string `json:"package_status" binding:"required"`
+		TruckID       int    `json:"truck_id" binding:"required"`
+		TruckStatus   string `json:"truck_status" binding:"required"`
+		TruckLocation struct {
+			X int `json:"x" binding:"required"`
+			Y int `json:"y" binding:"required"`
+		} `json:"truck_location" binding:"required"`
+		Message string `json:"message" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON format"})
+		return
+	}
+	//跟上面一樣
 }

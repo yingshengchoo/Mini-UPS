@@ -89,7 +89,14 @@ func MakeDelivery(truckID int32, seqnum int64, deliveries []*worldupspb.UDeliver
 	return &worldupspb.UGoDeliver{
 		Truckid:  proto.Int32(truckID),
 		Seqnum:   proto.Int64(seqnum),
-		Packages: deliveries,
+		Packages: deliveries, //好像老師 覺得可以一次做很多個delivery?
+	}
+}
+
+func MakeTruckQuery(truckID int32, seqnum int64) *worldupspb.UQuery {
+	return &worldupspb.UQuery{
+		Truckid: proto.Int32(truckID),
+		Seqnum:  proto.Int64(seqnum),
 	}
 }
 

@@ -30,9 +30,9 @@ from io import BytesIO
 #
 # Aside from the commands above : A/UQuery (UPS returns UTruck, Amazon returns APackage)
 # Aside from the responses above: A/UErr, APackage, UTruck
-HOST = 'vcm-46946.vm.duke.edu'
-PORT = 12345
-
+HOST = 'vcm-47478.vm.duke.edu'
+UPS_PORT = 12345
+AMAZON_PORT = 23456
 def send_msg(sock, msg):
     data = msg.SerializeToString()
     out = BytesIO()
@@ -64,7 +64,7 @@ def recv_msg(sock, message_type):
 
 
 def connect_amazon():
-    sock = socket.create_connection(("vcm-46946.vm.duke.edu", 23456))
+    sock = socket.create_connection((HOST, AMAZON_PORT))
     print("Sending AConnect...")
     aconnect = amazon_pb2.AConnect()
     aconnect.isAmazon = True
@@ -80,7 +80,7 @@ def connect_amazon():
 
 
 def connect_ups(worldid):
-    sock = socket.create_connection(("vcm-46946.vm.duke.edu", 12345))
+    sock = socket.create_connection((HOST, UPS_PORT))
     print("Sending UConnect...")
     uconnect = world_ups_1_pb2.UConnect()
     uconnect.isAmazon = False

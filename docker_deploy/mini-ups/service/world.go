@@ -10,6 +10,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+//Commands 也有ACK?? 我們不知道需不需要ack world the Seqnum
+
 // SendRequestToGoPickUp sends a pickup request to the UPS world process
 func SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint, seqnum int64) error {
 	cmd := &worldupspb.UCommands{
@@ -29,7 +31,7 @@ func SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint, seqnum 
 	return nil
 }
 
-// Sends a UGoDelivery command to world.
+// Sends a UGoDelivery command to world that tells the truck to delivery the package
 func SendWorldDeliveryRequest(packageID string, seqnum int64) error {
 
 	pack, err := dao.GetPackagesByPackageID(packageID)
@@ -39,6 +41,18 @@ func SendWorldDeliveryRequest(packageID string, seqnum int64) error {
 	delivery := protocol.CreateDeliveryLocation(int64(*pack.TruckID), int32(pack.Destination.X), int32(pack.Destination.Y))
 	goDeliver := protocol.MakeDelivery(int32(*pack.TruckID), seqnum, []*worldupspb.UDeliveryLocation{delivery})
 	cmd := protocol.CreateUPSCommands(nil, []*worldupspb.UGoDeliver{goDeliver}, 0, false, nil, nil)
+
+	if err := protocol.SendUPSCommands(cmd); err != nil {
+		return fmt.Errorf("error sending delivery request: %w", err)
+	}
+
+	return nil
+}
+
+// Sends a Truck Query to World of truckID
+func SendWorldTruckQuery(truckID model.TruckID, seqnum int64) error {
+	query := protocol.MakeTruckQuery(int32(truckID), seqnum)
+	cmd := protocol.CreateUPSCommands(nil, nil, 0, false, []*worldupspb.UQuery{query}, nil)
 
 	if err := protocol.SendUPSCommands(cmd); err != nil {
 		return fmt.Errorf("error sending delivery request: %w", err)

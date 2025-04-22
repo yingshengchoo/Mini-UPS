@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mini-ups/dao"
 	"mini-ups/model"
+	"mini-ups/util"
 )
 
 // register a truck
@@ -27,10 +28,10 @@ func GetIDByTruck(truck *model.Truck) (model.TruckID, error) {
 	return truck.ID, nil
 }
 
-// TODO update truck info
 // communicate with world
-func GetUpdatedTruckInfo(truckID model.TruckID) (*model.Truck, error) {
-	return nil, fmt.Errorf("need to implement")
+func GetUpdatedTruckInfo(truckID model.TruckID) error {
+	seqnum := util.GenerateSeqNum()
+	return SendWorldTruckQuery(truckID, seqnum)
 }
 
 func GetFirstIdleTruck() (*model.Truck, error) {
