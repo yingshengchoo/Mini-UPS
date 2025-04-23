@@ -58,26 +58,27 @@ func ParseAction(c *gin.Context) {
 			CheckStatus(c)
 			break
 		}
-	case "truck_arrived_response":
-		{
-			HandleTruckArrivedResponse(c)
-			break
-		}
-	case "package_delivered_response":
-		{
-			HandlePackageDelieveredResponse(c)
-			break
-		}
-	case "query_status_response":
-		{
-			HandlePackageQueryStatusResponse(c)
-			break
-		}
-	case "redirect_pacakage_response":
-		{
-			HandleRedirectPackageResponse(c)
-			break
-		}
+	//Doesn't belong here: Should be listening to amazon response
+	// case "truck_arrived_response":
+	// 	{
+	// 		HandleTruckArrivedResponse(c)
+	// 		break
+	// 	}
+	// case "package_delivered_response":
+	// 	{
+	// 		HandlePackageDelieveredResponse(c)
+	// 		break
+	// 	}
+	// case "query_status_response":
+	// 	{
+	// 		HandlePackageQueryStatusResponse(c)
+	// 		break
+	// 	}
+	// case "redirect_pacakage_response":
+	// 	{
+	// 		HandleRedirectPackageResponse(c)
+	// 		break
+	// 	}
 	default:
 		{
 			c.JSON(http.StatusBadRequest, gin.H{"error": "unknown action <" + req.Action + "> in json"})

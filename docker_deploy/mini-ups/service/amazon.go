@@ -11,6 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
+//UPDATE HERE: Make sure to move the listening to response from Service UPS to here!
+//We send Amazon POST request -> We listen to their response
+
 const amazonURL = "http://localhost:8000/api/amazon" //是這個ＵＲＬ嗎
 
 // Send Request to Amazon, notifying that the Delivery was complete
