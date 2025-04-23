@@ -1,14 +1,37 @@
-FROM python:3.9-slim
+# dev mode
+FROM golang:1.24.2
 
 WORKDIR /app
 
-COPY . /app/
+RUN go install github.com/air-verse/air@latest
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+COPY . .
 
-ENV PYTHONUNBUFFERED 1
+EXPOSE 8080
 
-# setup database
+CMD ["air"]
 
-CMD ["bash", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn myproject.wsgi:application --bind 0.0.0.0:8000"]
+
+# product mode
+
+# FROM golang:1.24.2 as buidler
+
+# WORKDIR /app
+
+# COPY go.mod go.sum ./
+
+# RUN go mod download
+
+# COPY . /app/
+
+# RUN go build -o main .
+
+# FROM alpine:latest
+
+# WORKDIR /root/
+
+# COPY --from=builder /app/app .
+
+# EXPOSE 8080
+
+# CMD ["./app"]

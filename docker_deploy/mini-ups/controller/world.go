@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"log"
 	"mini-ups/model"
 	"mini-ups/protocol/worldupspb"
 	"mini-ups/service"
@@ -14,7 +15,7 @@ func ParseWorldResponse() {
 	for {
 		resp := &worldupspb.UResponses{}
 		if err := util.RecvMsg(util.UPSConn, resp); err != nil {
-			fmt.Println("Error receiving world response:", err)
+			log.Fatal("Error receiving world response:", err)
 			continue
 		}
 
@@ -26,7 +27,7 @@ func ParseWorldResponse() {
 		HandleErrors(resp.GetError())
 
 		if finished := resp.GetFinished(); finished {
-			fmt.Println("World server disconnected")
+			log.Println("World server disconnected")
 			// 這裡要做什麼? 直接結束program嗎?
 		}
 	}
