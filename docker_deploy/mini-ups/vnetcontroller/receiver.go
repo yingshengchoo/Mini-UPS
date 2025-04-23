@@ -108,7 +108,6 @@ func (r *Receiver) handleDeliveries(delivered []*worldupspb.UDeliveryMade) {
 		service.ChangePackageStatus(packageID, model.StatusDelivered)
 		//I choose to NotifyAmazonDeliveryComplete in HandleCompletion instead of here because it has x,y
 
-		r.handleSeqnum(seqnum)
 	}
 }
 
