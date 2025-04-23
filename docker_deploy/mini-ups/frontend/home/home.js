@@ -30,6 +30,11 @@ async function track() {
     container.querySelectorAll('.package-item:not(#package-template)').forEach(e => e.remove());
 
     const clone = template.cloneNode(true);
+    const btn = clone.querySelector(".redirect-btn");
+    const btnContainer = btn?.closest("div");
+    if (btnContainer) {
+      btnContainer.remove();
+    }
     clone.id = "";
     clone.style.display = "block";
 
@@ -158,6 +163,7 @@ async function getPackageInfo() {
 
     packages.forEach(pkg => {
       const clone = template.cloneNode(true);
+
       clone.id = "";
       clone.style.display = "block";
 
