@@ -1,16 +1,18 @@
 package vnetcontroller
 
 type Controller struct {
-	receiver *Receiver
-	sender   *Sender
-	window   *Window
+	receiver   *Receiver
+	sender     *Sender
+	recvWindow *RecvWindow
+	snedWindow *SendWindow
 }
 
 func NewController() *Controller {
 	return &Controller{
-		receiver: &Receiver{},
-		sender:   &Sender{},
-		window:   &Window{},
+		receiver:   &Receiver{},
+		sender:     &Sender{},
+		recvWindow: &RecvWindow{},
+		snedWindow: &SendWindow{},
 	}
 }
 
