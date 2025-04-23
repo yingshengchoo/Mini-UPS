@@ -27,7 +27,7 @@ func main() {
 	// UPSConn, worldID = protocol.ConnectUPS(trucks)
 
 	//world response listener
-	go controller.ParseWorldResponse()
+	go controller.WorldHandler()
 
 	//start router
 	r := router.InitRouter()

@@ -382,6 +382,7 @@ func Deliver(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 	seqnum := util.GenerateSeqNum() //  <------ 還沒implement丟包 所以沒有存 seqnum request pair. 現在只是assign seqnum 而已
 	service.SendWorldDeliveryRequest(req.PackageID, seqnum)
+
 	//when world responds with UFinish, notify Amazon <-- happens in the ParseWorldResponse(controller - world.go)
 }
 
