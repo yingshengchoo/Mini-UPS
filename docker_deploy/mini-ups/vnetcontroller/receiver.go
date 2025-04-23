@@ -46,7 +46,7 @@ func (r *Receiver) handleAcks(acks []int64) {
 	}
 }
 
-//Assum all response are correct
+//Assume all response are correct
 
 // TODO
 // Completion relates to the status of the truck
@@ -59,16 +59,16 @@ func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 		status := completion.GetStatus()
 		seqnum := completion.GetSeqnum()
 
-		//query request based on seqnum and get the packageID
-		//resp := r.sendWindow.GetResponse(seqnum) //   <-------- IF we use Goroutine in world handler, watch out here.
-		//             What if we try to get response, but ackHandler deletes the response.
+		//If Seqnum has already been processed skip to next one
+		if !r.handleSeqnum(seqnum) {
+			continue
+		}
 
-		//Also revist logic here. How do we get the package ID associated with
 		pack, err := service.GetPackageInfoByTruck(truckID)
 		packageID := pack.ID
 		if err != nil {
 			log.Println("Error:", err)
-			return
+			continue
 		}
 
 		//update package and truck status
@@ -87,10 +87,9 @@ func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 		err = service.ChangeTruckCoord(model.TruckID(int(truckID)), int(x), int(y))
 		if err != nil {
 			log.Println("Error:", err)
-			return
+			continue
 		}
 
-		r.handleSeqnum(seqnum)
 	}
 }
 
@@ -100,6 +99,12 @@ func (r *Receiver) handleDeliveries(delivered []*worldupspb.UDeliveryMade) {
 		//truckID := int(delivery.GetTruckid())
 		packageID := fmt.Sprintf("%d", delivery.GetPackageid())
 		seqnum := delivery.GetSeqnum()
+
+		// If Seqnum has already been processed return.
+		if !r.handleSeqnum(seqnum) {
+			continue
+		}
+
 		service.ChangePackageStatus(packageID, model.StatusDelivered)
 		//I choose to NotifyAmazonDeliveryComplete in HandleCompletion instead of here because it has x,y
 
@@ -115,17 +120,21 @@ func (r *Receiver) handleTruckStatus(statusList []*worldupspb.UTruck) {
 		x := truck.GetX()
 		y := truck.GetY()
 		seqnum := truck.GetSeqnum()
+
+		//If Seqnum has already been processed return.
+		if !r.handleSeqnum(seqnum) {
+			continue
+		}
+
 		//update truck info here
 		truck, err := service.GetTruckByID(model.TruckID(truckID))
 		if err != nil {
 			log.Println("Error:", err)
-			return
+			continue
 		}
-		// truck.status = status  <-- naming from world is different from our ENUM,
+		// truck.status = status  <-- naming from world is different from our ENUM,  <--- HERE!!! TODO
 		truck.Coord.X = int(x)
 		truck.Coord.Y = int(y)
-
-		r.handleSeqnum(seqnum)
 	}
 }
 
@@ -133,10 +142,14 @@ func (r *Receiver) handleTruckStatus(statusList []*worldupspb.UTruck) {
 func (r *Receiver) handleErrors(errors []*worldupspb.UErr) {
 }
 
-func (r *Receiver) handleSeqnum(seqnum int64) {
+// returns true if the seqnum has not been handled, False if it has already been handled
+func (r *Receiver) handleSeqnum(seqnum int64) bool {
 	//Check if seqnum has been ack or not. If no, send ack to world.
 	if r.recvWindow.Record(seqnum) {
 		//sendAckToWorld(seqnum) <-- hmm not sure what to do here.. This logic belongs in sender.. but how do we access it?
+		return true
+	} else {
+		return false
 	}
 }
 

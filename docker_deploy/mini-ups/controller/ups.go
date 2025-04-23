@@ -5,7 +5,7 @@ import (
 	"log"
 	"mini-ups/model"
 	"mini-ups/service"
-	"mini-ups/util"
+	"mini-ups/vnetcontroller"
 	"net/http"
 	"time"
 
@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
 )
+
+var Controller *vnetcontroller.Controller
 
 //ERROR TYPES 文檔有specify 可能要檢查有沒有用對
 
@@ -151,10 +153,7 @@ func PickUp(c *gin.Context) {
 		return
 	}
 
-	seqnum := util.GenerateSeqNum() //  <------ 還沒implement丟包 所以沒有存 seqnum request pair. 現在只是assign seqnum 而已
-	//TODO: Implement seqnum, request 儲存 for 掉包
-
-	err = service.SendWorldRequestToGoPickUp(truckID, req.WarehouseID, seqnum) //Do World Command // 用thread?
+	err = Controller.Sender.SendWorldRequestToGoPickUp(truckID, req.WarehouseID) //Do World Command // 用thread maybe?
 	if err != nil {
 		log.Println("Error sending GoPickUp command:", err)
 	}
@@ -380,9 +379,10 @@ func Deliver(c *gin.Context) {
 		"message":        fmt.Sprintf("Package %s marked as ready", req.PackageID),
 	}
 	c.JSON(http.StatusOK, resp)
-	seqnum := util.GenerateSeqNum() //  <------ 還沒implement丟包 所以沒有存 seqnum request pair. 現在只是assign seqnum 而已
-	service.SendWorldDeliveryRequest(req.PackageID, seqnum)
-
+	err = Controller.Sender.SendWorldDeliveryRequest(req.PackageID)
+	if err != nil {
+		log.Println("Error: ", err)
+	}
 	//when world responds with UFinish, notify Amazon <-- happens in the ParseWorldResponse(controller - world.go)
 }
 

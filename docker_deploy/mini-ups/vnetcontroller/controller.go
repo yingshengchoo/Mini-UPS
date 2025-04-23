@@ -1,10 +1,13 @@
 package vnetcontroller
 
-import "net"
+import (
+	"mini-ups/util"
+	"net"
+)
 
 type Controller struct {
 	receiver   *Receiver
-	sender     *Sender
+	Sender     *Sender
 	recvWindow *RecvWindow
 	sendWindow *SendWindow
 }
@@ -17,12 +20,12 @@ func NewController(conn net.Conn) *Controller {
 
 	return &Controller{
 		receiver:   receiver,
-		sender:     sender,
+		Sender:     sender,
 		recvWindow: recvWindow,
 		sendWindow: sendWindow,
 	}
 }
 
 func (c *Controller) Start() {
-	go c.receiver.ListenForWorldResponses(c.sender.conn)
+	go c.receiver.ListenForWorldResponses(util.UPSConn)
 }

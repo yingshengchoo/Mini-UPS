@@ -7,25 +7,24 @@ import (
 	"mini-ups/model"
 	"mini-ups/protocol"
 	"mini-ups/protocol/worldupspb"
+	"mini-ups/util"
 	"net"
 
 	"google.golang.org/protobuf/proto"
 )
 
 type Sender struct {
-	conn       net.Conn
 	sendWindow *SendWindow
 }
 
 func NewSender(conn net.Conn, sw *SendWindow) *Sender {
 	return &Sender{
-		conn:       conn,
 		sendWindow: sw,
 	}
 }
 
 func (s *Sender) Send(msg proto.Message, seqnum int64) error {
-	err := s.SendMsg(s.conn, msg)
+	err := s.SendMsg(util.UPSConn, msg)
 	if err != nil {
 		return err
 	}
@@ -33,7 +32,8 @@ func (s *Sender) Send(msg proto.Message, seqnum int64) error {
 	return nil
 }
 
-func (s *Sender) SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint, seqnum int64) error {
+func (s *Sender) SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint) error {
+	seqnum := util.GenerateSeqNum()
 	cmd := &worldupspb.UCommands{
 		Pickups: []*worldupspb.UGoPickup{{
 			Truckid: proto.Int32(int32(truckID)),
@@ -44,16 +44,12 @@ func (s *Sender) SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID u
 
 	fmt.Printf("Sending UGoPickup command: TruckID=%d, WarehouseID=%d, Seqnum=%d\n", truckID, warehouseID, seqnum)
 
-	if err := protocol.SendUPSCommands(cmd); err != nil {
-		return fmt.Errorf("failed to send pickup command: %w", err)
-	}
-
-	return nil
+	return s.Send(cmd, seqnum)
 }
 
 // Sends a UGoDelivery command to world that tells the truck to delivery the package
-func (s *Sender) SendWorldDeliveryRequest(packageID string, seqnum int64) error {
-
+func (s *Sender) SendWorldDeliveryRequest(packageID string) error {
+	seqnum := util.GenerateSeqNum()
 	pack, err := dao.GetPackagesByPackageID(packageID)
 	if err != nil {
 		return err
@@ -62,28 +58,24 @@ func (s *Sender) SendWorldDeliveryRequest(packageID string, seqnum int64) error 
 	goDeliver := protocol.MakeDelivery(int32(*pack.TruckID), seqnum, []*worldupspb.UDeliveryLocation{delivery})
 	cmd := protocol.CreateUPSCommands(nil, []*worldupspb.UGoDeliver{goDeliver}, 0, false, nil, nil)
 
-	if err := protocol.SendUPSCommands(cmd); err != nil {
-		return fmt.Errorf("error sending delivery request: %w", err)
-	}
-
-	return nil
+	return s.Send(cmd, seqnum)
 }
 
 // Sends a Truck Query to World of truckID
-func (s *Sender) SendWorldTruckQuery(truckID model.TruckID, seqnum int64) error {
+func (s *Sender) SendWorldTruckQuery(truckID model.TruckID) error {
+
+	seqnum := util.GenerateSeqNum()
 	query := protocol.MakeTruckQuery(int32(truckID), seqnum)
 	cmd := protocol.CreateUPSCommands(nil, nil, 0, false, []*worldupspb.UQuery{query}, nil)
 
-	if err := protocol.SendUPSCommands(cmd); err != nil {
-		return fmt.Errorf("error sending delivery request: %w", err)
-	}
-
-	return nil
+	return s.Send(cmd, seqnum)
 }
 
 // TODO
-func (s *Sender) SendWorldAck(seqnum int64) error {
-	return nil
+func (s *Sender) SendWorldAck(ack int64) error {
+	cmd := protocol.CreateUPSCommands(nil, nil, 0, false, nil, []int64{ack})
+	//Add Ack to our recvWindow
+	return s.Send(cmd, ack)
 }
 
 // reserved for future use

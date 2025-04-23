@@ -8,6 +8,7 @@ import (
 	"mini-ups/protocol/worldupspb"
 	"mini-ups/router"
 	"mini-ups/util"
+	"mini-ups/vnetcontroller"
 )
 
 func main() {
@@ -26,8 +27,9 @@ func main() {
 	util.UPSConn = protocol.ConnectUPSWithWorldID(worldID, trucks)
 	// UPSConn, worldID = protocol.ConnectUPS(trucks)
 
-	//world response listener
-	go controller.WorldHandler()
+	vnetCtrl := vnetcontroller.NewController(util.UPSConn)
+	vnetCtrl.Start() //world response listener
+	controller.Controller = vnetCtrl
 
 	//start router
 	r := router.InitRouter()
