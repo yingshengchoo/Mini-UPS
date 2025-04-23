@@ -16,8 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const payload = {
         package_id: packageId,
-        x: parseInt(x),
-        y: parseInt(y)
+        "coordinate":{
+            x: parseInt(x),
+            y: parseInt(y)
+        }
       };
 
       fetch("/api/package/redirect", {
@@ -29,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .then(res => {
         if (!res.ok) throw new Error("Failed to send");
+        init()
         return res.json();
       })
       .then(data => {

@@ -128,3 +128,25 @@ func parseUintParam(c *gin.Context, name string) (uint, error) {
 	_, err := fmt.Sscanf(valStr, "%d", &val)
 	return val, err
 }
+
+// POST /api/package/redirect
+func RedirectPackage(c *gin.Context) {
+	var redirectReq struct {
+		PackageID string           `json:"package_id" bind:"required"`
+		Coord     model.Coordinate `json:"coordinate" bind:"required"`
+	}
+
+	// parse
+	if err := c.ShouldBindJSON(&redirectReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input: " + err.Error()})
+		return
+	}
+
+	// redirect
+	if err := service.RedirectPackage(redirectReq.PackageID, &redirectReq.Coord); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid input: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}

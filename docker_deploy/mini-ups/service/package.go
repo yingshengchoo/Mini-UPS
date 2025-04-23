@@ -63,3 +63,15 @@ func GetWarehouseID(package_id string) (uint, error) {
 	}
 	return warehouse_id, nil
 }
+
+// redirect a package
+func RedirectPackage(packageID string, coord *model.Coordinate) error {
+	// todo check access right here
+
+	// update
+	_, err := dao.UpdateDeliveryAddress(packageID, *coord)
+	if err!=nil{
+		return err
+	}
+	return nil
+}
