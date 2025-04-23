@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/binary"
 	"fmt"
+	"mini-ups/config"
 	"net"
 	"sync/atomic"
 
@@ -11,7 +12,7 @@ import (
 
 var UPSConn net.Conn
 
-const HOST = "vcm-47478.vm.duke.edu:12345" // Changed based on HOST
+var HOST = config.GetEnvOrDefault("WORLD_HOST", "vcm-47478.vm.duke.edu:12345") // Changed based on HOST
 
 var seqnum int64
 

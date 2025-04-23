@@ -40,6 +40,15 @@ func loadConfig(path string) error {
 		return fmt.Errorf("failed to unmarshal yaml: %w", err)
 	}
 
+	cfg.Postgres.Host = GetEnvOrDefault("DB_HOST", cfg.Postgres.Host)
+
 	AppConfig = &cfg
 	return nil
+}
+
+func GetEnvOrDefault(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
 }
