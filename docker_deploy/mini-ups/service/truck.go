@@ -42,3 +42,17 @@ func ChangeTruckStatus(truckID int, newStatus model.Status) error {
 	// Add business rules here if needed
 	return dao.UpdateTruckStatus(truckID, newStatus)
 }
+
+func ChangeTruckCoord(truckID model.TruckID, x, y int) error {
+	truck, err := GetTruckByID(truckID)
+	if err != nil {
+		return err
+	}
+	truck.Coord.X = x
+	truck.Coord.Y = y
+	err = dao.UpdateTruck(truck)
+	if err != nil {
+		return err
+	}
+	return nil
+}

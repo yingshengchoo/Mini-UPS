@@ -17,6 +17,10 @@ func GetPackageInfo(packageID string) (*model.Package, error) {
 	return dao.GetPackagesByPackageID(packageID)
 }
 
+func GetPackageInfoByTruck(truckID int32) (*model.Package, error) {
+	return dao.GetPackageInfoByTruckID(truckID)
+}
+
 // Attempts to update the delivery address; handles logic
 func ChangePackageDestination(packageID string, newCoord model.Coordinate) (string, error) {
 	rows, err := dao.UpdateDeliveryAddress(packageID, newCoord)

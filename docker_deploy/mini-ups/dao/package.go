@@ -25,7 +25,17 @@ func GetPackagesByUser(username string) ([]model.Package, error) {
 func GetPackagesByPackageID(packageID string) (*model.Package, error) {
 	var pack model.Package
 	if err := db.DB.
-		Where("id = ?", packageID).
+		Where("package_id = ?", packageID).
+		First(&pack).Error; err != nil {
+		return nil, err
+	}
+	return &pack, nil
+}
+
+func GetPackageInfoByTruckID(truckID int32) (*model.Package, error) {
+	var pack model.Package
+	if err := db.DB.
+		Where("truck_id = ?", model.TruckID(truckID)).
 		First(&pack).Error; err != nil {
 		return nil, err
 	}

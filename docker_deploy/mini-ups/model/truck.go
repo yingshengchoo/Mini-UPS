@@ -1,7 +1,7 @@
 package model
 
 type Truck struct {
-	ID     TruckID    `gorm:"primary_key" json:"id"`
+	ID     TruckID    `gorm:"primaryKey" json:"id"`
 	Coord  Coordinate `gorm:"not null;embedded" json:"coord"`
 	Status Status     `gorm:"type:varchar(20)" json:"status"`
 }

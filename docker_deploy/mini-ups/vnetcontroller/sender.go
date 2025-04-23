@@ -7,7 +7,6 @@ import (
 	"mini-ups/model"
 	"mini-ups/protocol"
 	"mini-ups/protocol/worldupspb"
-	"mini-ups/util"
 	"net"
 
 	"google.golang.org/protobuf/proto"
@@ -26,7 +25,7 @@ func NewSender(conn net.Conn, sw *SendWindow) *Sender {
 }
 
 func (s *Sender) Send(msg proto.Message, seqnum int64) error {
-	err := util.SendMsg(s.conn, msg)
+	err := s.SendMsg(s.conn, msg)
 	if err != nil {
 		return err
 	}
@@ -79,6 +78,11 @@ func (s *Sender) SendWorldTruckQuery(truckID model.TruckID, seqnum int64) error 
 		return fmt.Errorf("error sending delivery request: %w", err)
 	}
 
+	return nil
+}
+
+// TODO
+func (s *Sender) SendWorldAck(seqnum int64) error {
 	return nil
 }
 
