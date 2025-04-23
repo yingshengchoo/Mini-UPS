@@ -25,7 +25,7 @@ func GetPackagesByUser(username string) ([]model.Package, error) {
 func GetPackagesByPackageID(packageID string) (*model.Package, error) {
 	var pack model.Package
 	if err := db.DB.
-		Where("package_id = ?", packageID).
+		Where("id = ?", packageID).
 		First(&pack).Error; err != nil {
 		return nil, err
 	}

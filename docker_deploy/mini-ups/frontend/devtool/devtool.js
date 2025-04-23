@@ -46,7 +46,6 @@ form.addEventListener('submit', async (e) => {
       quantity: parseInt(inputs[1].value)
     };
   });
-
   const data = {
     package_id: document.getElementById('package_id').value,
     username: document.getElementById('username').value,
@@ -55,6 +54,7 @@ form.addEventListener('submit', async (e) => {
     destination_y: parseInt(document.getElementById('destination_y').value),
     warehouse_id: parseInt(document.getElementById('warehouse_id').value),
   };
+  // console.log(data)
 
   try {
     const res = await fetch('/api/package/create', {

@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"mini-ups/model"
 	"mini-ups/service"
@@ -26,8 +29,15 @@ func ParseAction(c *gin.Context) {
 		Action string `json:"action" binding:"required"`
 	}
 
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
 	// parse action
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no action in json"})
 		return
 	}
@@ -92,6 +102,7 @@ func ParseAction(c *gin.Context) {
 // POST /api/ups/pickup
 func PickUp(c *gin.Context) {
 	var req struct {
+		Action      string         `json:"action"`
 		PackageID   string         `json:"package_id" binding:"required"`
 		Username    string         `json:"username" binding:"required"`
 		Items       datatypes.JSON `json:"items" binding:"required"`
@@ -100,7 +111,16 @@ func PickUp(c *gin.Context) {
 		WarehouseID uint           `json:"warehouse_id" binding:"required"`
 		MessageID   string         `json:"message_id" binding:"required"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
+
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
+		log.Print(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"action":         "pickup_response",
 			"in_response_to": req.MessageID,
@@ -189,7 +209,13 @@ func LoadingPackage(c *gin.Context) {
 		WarehouseID int    `json:"warehouse_id" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"action":         "loading_package_response",
 			"message_id":     uuid.New().String(),
@@ -200,7 +226,7 @@ func LoadingPackage(c *gin.Context) {
 		return
 	}
 
-	err := service.ChangePackageStatus(req.PackageID, model.PackageStatus(model.StatusLoading))
+	err = service.ChangePackageStatus(req.PackageID, model.PackageStatus(model.StatusLoading))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"action":         "loading_package_response",
@@ -232,7 +258,13 @@ func CheckStatus(c *gin.Context) {
 		PackageID string `json:"package_id" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"action":         "query_status_response",
 			"timestamp":      time.Now().UTC().Format(time.RFC3339),
@@ -296,7 +328,14 @@ func LoadedPackage(c *gin.Context) {
 		TruckID   int    `json:"truck_id" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"action":         "package_loaded_response", // 不知道這裡是不是該這樣寫
 			"message_id":     uuid.New().String(),
@@ -307,8 +346,9 @@ func LoadedPackage(c *gin.Context) {
 		return
 	}
 
-	err := service.ChangeTruckStatus(req.TruckID, model.TruckStatus.LOADED)
+	err = service.ChangeTruckStatus(req.TruckID, model.TruckStatus.LOADED)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
 			"message": err.Error(),
@@ -318,6 +358,7 @@ func LoadedPackage(c *gin.Context) {
 
 	err = service.ChangePackageStatus(req.PackageID, model.PackageStatus(model.StatusLoaded))
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"action":         "loading_package_response",
 			"message_id":     uuid.New().String(),
@@ -339,7 +380,13 @@ func Deliver(c *gin.Context) {
 		TruckID   int    `json:"truck_id" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"action":         "package_loaded_response",
 			"message_id":     uuid.New().String(),
@@ -350,7 +397,7 @@ func Deliver(c *gin.Context) {
 		return
 	}
 
-	err := service.ChangeTruckStatus(req.TruckID, model.TruckStatus.DELIVERING)
+	err = service.ChangeTruckStatus(req.TruckID, model.TruckStatus.DELIVERING)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  "error",
@@ -395,7 +442,13 @@ func HandleActionResponse(c *gin.Context) {
 		Message      string `json:"message" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON format"})
 		return
 	}
@@ -409,7 +462,13 @@ func HandleTruckArrivedResponse(c *gin.Context) {
 	var req struct {
 		Status string `json:"status" binding:"required"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
@@ -446,9 +505,24 @@ func HandlePackageQueryStatusResponse(c *gin.Context) {
 		} `json:"truck_location" binding:"required"`
 		Message string `json:"message" binding:"required"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
+	bodyBytes, err := getBodyBytes(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(400, gin.H{"error": "invalid request"})
+		return
+	}
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON format"})
 		return
 	}
 	//跟上面一樣
+}
+
+func getBodyBytes(c *gin.Context) ([]byte, error) {
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return nil, err
+	}
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+	return bodyBytes, nil
 }

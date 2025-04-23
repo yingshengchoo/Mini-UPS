@@ -230,7 +230,7 @@ const formatItems = (items) => {
       return String(items);
     }
   }
-  return items.map(item => `${item.qty} x ${item.name}`).join(', ');
+  return items.map(item => `${item.quantity} x ${item.name}`).join(', ');
 };
 
 const formatDate = (dateStr) => {

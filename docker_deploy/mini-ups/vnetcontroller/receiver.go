@@ -27,6 +27,7 @@ func (r *Receiver) ListenForWorldResponses(conn net.Conn) {
 			fmt.Println("Error receiving world response:", err)
 			continue
 		}
+		log.Print(resp)
 		r.handleCompletions(resp.GetCompletions())
 		r.handleDeliveries(resp.GetDelivered())
 		r.handleAcks(resp.GetAcks())
