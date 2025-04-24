@@ -39,18 +39,22 @@ func NewPickupQueue() *PickupQueue {
 
 // add new req
 func (q *PickupQueue) AddRequest(req *PickupReq) {
+	log.Println("here")
 	q.queue <- req
 	q.tryConsume()
 }
 
 // try to consume message
 func (q *PickupQueue) tryConsume() {
+	log.Println("here2")
 	for {
+		log.Printf("queue:%d", len(q.queue))
 		if len(q.queue) == 0 {
 			break
 		}
 		truck, err := service.GetFirstIdleTruck()
 		if err != nil {
+			log.Println(err)
 			break
 		}
 		q.Pickup(truck.ID)
