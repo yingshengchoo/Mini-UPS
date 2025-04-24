@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	"mini-ups/protocol/worldupspb"
@@ -23,27 +22,23 @@ func CreateTruck(id, x, y int32) *worldupspb.UInitTruck {
 // connectUPS connects to UPS with a given worldID and a list of initial trucks
 // This assumes that Amazon connects first. If we connect first, may consider not providing worldID
 func ConnectUPSWithWorldID(worldID int64, trucks []*worldupspb.UInitTruck) net.Conn {
-	conn, err := net.Dial("tcp", util.HOST+":12345")
+	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:12345")
 	if err != nil {
-		log.Fatal(err)
 		panic(err)
 	}
 	fmt.Println("Sending UConnect...")
 
 	uconnect := &worldupspb.UConnect{
 		IsAmazon: proto.Bool(false),
-		// Worldid:  proto.Int64(worldID),
-		Trucks: trucks,
+		Worldid:  proto.Int64(worldID),
+		Trucks:   trucks,
 	}
-	log.Print(uconnect.String())
 	if err := util.SendMsg(conn, uconnect); err != nil {
-		log.Fatal(err)
 		panic(err)
 	}
 
 	resp := &worldupspb.UConnected{}
 	if err := util.RecvMsg(conn, resp); err != nil {
-		log.Fatal(err)
 		panic(err)
 	}
 	fmt.Println("UConnected:", resp)
@@ -106,10 +101,10 @@ func MakeTruckQuery(truckID int32, seqnum int64) *worldupspb.UQuery {
 }
 
 func CreateUPSCommands(
-	pickups []*worldupspb.UGoPickup,
+	pickups []*worldupspb.UGoPickup, // Make UGoPickUP
 	deliveries []*worldupspb.UGoDeliver,
-	simspeed uint32,
-	disconnect bool,
+	simspeed uint32, // Can include to make it go faster i think.
+	disconnect bool, //Always use False unless closing connection
 	queries []*worldupspb.UQuery,
 	acks []int64,
 ) *worldupspb.UCommands {

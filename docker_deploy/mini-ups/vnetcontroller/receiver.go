@@ -14,10 +14,11 @@ import (
 type Receiver struct {
 	recvWindow *RecvWindow
 	sendWindow *SendWindow
+	sender     *Sender
 }
 
-func NewReceiver(rw *RecvWindow, sw *SendWindow) *Receiver {
-	return &Receiver{recvWindow: rw, sendWindow: sw}
+func NewReceiver(rw *RecvWindow, sw *SendWindow, s *Sender) *Receiver {
+	return &Receiver{recvWindow: rw, sendWindow: sw, sender: s}
 }
 
 func (r *Receiver) ListenForWorldResponses(conn net.Conn) {
@@ -144,9 +145,15 @@ func (r *Receiver) handleErrors(errors []*worldupspb.UErr) {
 
 // returns true if the seqnum has not been handled, False if it has already been handled
 func (r *Receiver) handleSeqnum(seqnum int64) bool {
-	//Check if seqnum has been ack or not. If no, send ack to world.
+	//Check if seqnum has been ack or not.
+	//SendAck regardless (for each seqnum from World we send it back in case it drops the pacakge)
+
+	err := r.sender.SendWorldAck(seqnum)
+	if err != nil {
+		log.Println("Error:", err)
+	}
+
 	if r.recvWindow.Record(seqnum) {
-		//sendAckToWorld(seqnum) <-- hmm not sure what to do here.. This logic belongs in sender.. but how do we access it?
 		return true
 	} else {
 		return false

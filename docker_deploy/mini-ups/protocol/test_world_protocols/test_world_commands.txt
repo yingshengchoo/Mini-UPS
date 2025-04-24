@@ -181,6 +181,7 @@ func simulateUPSPickup(conn net.Conn, seqnum int64) {
 			Whid:    proto.Int32(1),
 			Seqnum:  proto.Int64(seqnum),
 		}},
+		Deliveries: []*worldupspb.UGoDeliver{},
 	}
 	sendMsg(conn, cmd)
 	fmt.Println("Sent UGoPickup")

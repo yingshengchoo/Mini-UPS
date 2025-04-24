@@ -10,9 +10,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var UPSConn net.Conn
-
 var HOST = config.GetEnvOrDefault("WORLD_HOST", "vcm-47478.vm.duke.edu:12345") // Changed based on HOST
+
+var UPSConn net.Conn
 
 var seqnum int64
 
@@ -78,4 +78,23 @@ func RecvMsg(conn net.Conn, msg proto.Message) error {
 	}
 
 	return proto.Unmarshal(data, msg)
+}
+
+// simple set datastructure with only the Add function because that is all we need.
+type Int64Set struct {
+	data map[int64]struct{}
+}
+
+func NewInt64Set() *Int64Set {
+	return &Int64Set{
+		data: make(map[int64]struct{}),
+	}
+}
+
+func (s *Int64Set) Add(val int64) bool {
+	if _, exists := s.data[val]; exists {
+		return false
+	}
+	s.data[val] = struct{}{}
+	return true
 }

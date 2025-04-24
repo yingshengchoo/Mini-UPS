@@ -1,0 +1,192 @@
+package main
+
+import (
+	"bufio"
+	"encoding/binary"
+	"fmt"
+	"net"
+	"os"
+	"strconv"
+	"strings"
+
+	"mini-ups/protocol/worldupspb"
+
+	"google.golang.org/protobuf/proto"
+)
+
+func sendMsg(conn net.Conn, msg proto.Message) error {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	var lenBuf [binary.MaxVarintLen32]byte
+	n := binary.PutUvarint(lenBuf[:], uint64(len(data)))
+
+	if _, err := conn.Write(lenBuf[:n]); err != nil {
+		return err
+	}
+	if _, err := conn.Write(data); err != nil {
+		return err
+	}
+
+	fmt.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
+	return nil
+}
+
+func recvMsg(conn net.Conn, msg proto.Message) error {
+	var size uint64
+	var shift uint
+	var sizeBuf [1]byte
+
+	for {
+		if _, err := conn.Read(sizeBuf[:]); err != nil {
+			return err
+		}
+		b := sizeBuf[0]
+		size |= uint64(b&0x7F) << shift
+		if b < 0x80 {
+			break
+		}
+		shift += 7
+		if shift >= 64 {
+			return fmt.Errorf("recvMsg: varint too long")
+		}
+	}
+
+	data := make([]byte, size)
+	total := 0
+	for total < int(size) {
+		n, err := conn.Read(data[total:])
+		if err != nil {
+			return err
+		}
+		total += n
+	}
+
+	return proto.Unmarshal(data, msg)
+}
+
+func connectUPS(worldID int64) net.Conn {
+	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:12345")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Sending UConnect...")
+
+	uconnect := &worldupspb.UConnect{
+		IsAmazon: proto.Bool(false),
+		Worldid:  proto.Int64(worldID),
+		Trucks: []*worldupspb.UInitTruck{{
+			Id: proto.Int32(1),
+			X:  proto.Int32(0),
+			Y:  proto.Int32(0),
+		}},
+	}
+	if err := sendMsg(conn, uconnect); err != nil {
+		panic(err)
+	}
+
+	resp := &worldupspb.UConnected{}
+	if err := recvMsg(conn, resp); err != nil {
+		panic(err)
+	}
+	fmt.Println("UConnected:", resp)
+	return conn
+}
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter worldID to connect to UPS: ")
+	worldIDStr, _ := reader.ReadString('\n')
+	worldIDStr = strings.TrimSpace(worldIDStr)
+	worldID, _ := strconv.ParseInt(worldIDStr, 10, 64)
+
+	conn := connectUPS(worldID)
+	defer conn.Close()
+
+	seqnum := int64(1)
+
+	for {
+		fmt.Println("\nUPS Command Menu:")
+		fmt.Println("1. GoPickup")
+		fmt.Println("2. GoDeliver")
+		fmt.Println("3. Disconnect")
+		fmt.Print("Choose an action: ")
+
+		choice := strings.TrimSpace(readLine(reader))
+
+		switch choice {
+		case "1":
+			fmt.Print("Enter Truck ID: ")
+			truckID := parseInt32(reader)
+
+			fmt.Print("Enter Warehouse ID: ")
+			whID := parseInt32(reader)
+
+			cmd := &worldupspb.UCommands{
+				Pickups: []*worldupspb.UGoPickup{{
+					Truckid: proto.Int32(truckID),
+					Whid:    proto.Int32(whID),
+					Seqnum:  proto.Int64(seqnum),
+				}},
+			}
+			sendMsg(conn, cmd)
+
+		case "2":
+			fmt.Print("Enter Truck ID: ")
+			truckID := parseInt32(reader)
+
+			fmt.Print("Enter Package ID: ")
+			pkgID := parseInt64(reader)
+
+			fmt.Print("Enter Destination X: ")
+			x := parseInt32(reader)
+
+			fmt.Print("Enter Destination Y: ")
+			y := parseInt32(reader)
+
+			cmd := &worldupspb.UCommands{
+				Deliveries: []*worldupspb.UGoDeliver{{
+					Truckid: proto.Int32(truckID),
+					Seqnum:  proto.Int64(seqnum),
+					Packages: []*worldupspb.UDeliveryLocation{{
+						Packageid: proto.Int64(pkgID),
+						X:         proto.Int32(x),
+						Y:         proto.Int32(y),
+					}},
+				}},
+			}
+			sendMsg(conn, cmd)
+
+		case "3":
+			cmd := &worldupspb.UCommands{
+				Disconnect: proto.Bool(true),
+			}
+			sendMsg(conn, cmd)
+			fmt.Println("Disconnect sent. Exiting.")
+			return
+
+		default:
+			fmt.Println("Invalid option.")
+		}
+
+		seqnum++
+	}
+}
+
+func readLine(reader *bufio.Reader) string {
+	text, _ := reader.ReadString('\n')
+	return strings.TrimSpace(text)
+}
+
+func parseInt32(reader *bufio.Reader) int32 {
+	val, _ := strconv.Atoi(readLine(reader))
+	return int32(val)
+}
+
+func parseInt64(reader *bufio.Reader) int64 {
+	val, _ := strconv.ParseInt(readLine(reader), 10, 64)
+	return val
+}

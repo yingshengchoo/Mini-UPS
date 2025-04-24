@@ -14,21 +14,24 @@ import (
 )
 
 type Sender struct {
+	recvWindow *RecvWindow
 	sendWindow *SendWindow
+	conn       net.Conn
 }
 
-func NewSender(conn net.Conn, sw *SendWindow) *Sender {
+func NewSender(rw *RecvWindow, sw *SendWindow, conn net.Conn) *Sender {
 	return &Sender{
+		recvWindow: rw,
 		sendWindow: sw,
+		conn:       conn,
 	}
 }
 
-func (s *Sender) Send(msg proto.Message, seqnum int64) error {
-	err := s.SendMsg(util.UPSConn, msg)
+func (s *Sender) Send(msg proto.Message) error {
+	err := s.SendMsg(s.conn, msg)
 	if err != nil {
 		return err
 	}
-	s.sendWindow.Add(seqnum, msg)
 	return nil
 }
 
@@ -42,9 +45,10 @@ func (s *Sender) SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID u
 		}},
 	}
 
-	fmt.Printf("Sending UGoPickup command: TruckID=%d, WarehouseID=%d, Seqnum=%d\n", truckID, warehouseID, seqnum)
+	// fmt.Printf("Sending UGoPickup command: TruckID=%d, WarehouseID=%d, Seqnum=%d\n", truckID, warehouseID, seqnum) //debugging
 
-	return s.Send(cmd, seqnum)
+	s.addMsg(seqnum, "UGoPickup", cmd)
+	return s.Send(cmd)
 }
 
 // Sends a UGoDelivery command to world that tells the truck to delivery the package
@@ -58,7 +62,9 @@ func (s *Sender) SendWorldDeliveryRequest(packageID string) error {
 	goDeliver := protocol.MakeDelivery(int32(*pack.TruckID), seqnum, []*worldupspb.UDeliveryLocation{delivery})
 	cmd := protocol.CreateUPSCommands(nil, []*worldupspb.UGoDeliver{goDeliver}, 0, false, nil, nil)
 
-	return s.Send(cmd, seqnum)
+	s.addMsg(seqnum, "UGoDeliver", cmd)
+
+	return s.Send(cmd)
 }
 
 // Sends a Truck Query to World of truckID
@@ -67,15 +73,20 @@ func (s *Sender) SendWorldTruckQuery(truckID model.TruckID) error {
 	seqnum := util.GenerateSeqNum()
 	query := protocol.MakeTruckQuery(int32(truckID), seqnum)
 	cmd := protocol.CreateUPSCommands(nil, nil, 0, false, []*worldupspb.UQuery{query}, nil)
-
-	return s.Send(cmd, seqnum)
+	s.addMsg(seqnum, "UQuery", cmd)
+	return s.Send(cmd)
 }
 
 // TODO
 func (s *Sender) SendWorldAck(ack int64) error {
 	cmd := protocol.CreateUPSCommands(nil, nil, 0, false, nil, []int64{ack})
-	//Add Ack to our recvWindow
-	return s.Send(cmd, ack)
+	//s.recvWindow.Record(ack) <-- NOT HERE!! record Ack in reciever -> !
+	//														 This is because we call Record there to determine if we need to do the operation at all.
+	return s.Send(cmd)
+}
+
+func (s *Sender) addMsg(seqnum int64, msgType string, msg interface{}) {
+	s.sendWindow.Add(seqnum, msgType, msg)
 }
 
 // reserved for future use
