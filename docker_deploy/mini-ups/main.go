@@ -6,6 +6,7 @@ import (
 	"mini-ups/db"
 	"mini-ups/protocol"
 	"mini-ups/protocol/worldupspb"
+	"mini-ups/queue"
 	"mini-ups/router"
 	"mini-ups/util"
 	"mini-ups/vnetcontroller"
@@ -30,6 +31,7 @@ func main() {
 	vnetCtrl := vnetcontroller.NewController(util.UPSConn)
 	vnetCtrl.Start() //world response listener
 	controller.Controller = vnetCtrl
+	queue.VnetCtrl = vnetCtrl
 
 	//start router
 	r := router.InitRouter()

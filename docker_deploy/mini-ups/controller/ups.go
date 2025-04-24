@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"mini-ups/model"
+	"mini-ups/queue"
 	"mini-ups/service"
 	"mini-ups/vnetcontroller"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/datatypes"
 )
 
 var Controller *vnetcontroller.Controller
@@ -101,16 +101,6 @@ func ParseAction(c *gin.Context) {
 
 // POST /api/ups/pickup
 func PickUp(c *gin.Context) {
-	var req struct {
-		Action      string         `json:"action"`
-		PackageID   string         `json:"package_id" binding:"required"`
-		Username    string         `json:"username" binding:"required"`
-		Items       datatypes.JSON `json:"items" binding:"required"`
-		DestX       int            `json:"destination_x" binding:"required"`
-		DestY       int            `json:"destination_y" binding:"required"`
-		WarehouseID uint           `json:"warehouse_id" binding:"required"`
-		MessageID   string         `json:"message_id" binding:"required"`
-	}
 
 	bodyBytes, err := getBodyBytes(c)
 	if err != nil {
@@ -118,7 +108,7 @@ func PickUp(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "invalid request"})
 		return
 	}
-
+	var req queue.PickupReq
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		log.Print(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -136,47 +126,7 @@ func PickUp(c *gin.Context) {
 	}
 
 	// goroutine send world pickup
-	//要是我們沒有truck 這裡因該放在一個queue裡
-	// 還是就回個error 等他們重新send pickup_request? <-- 目前是這樣
-	truck, err := service.GetFirstIdleTruck()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"action":         "pickup_response",
-			"in_response_to": req.MessageID,
-			"status":         "error",
-			"message":        "No available truck",
-		})
-		return
-	}
-
-	truckID, err := service.GetIDByTruck(truck)
-	//因該不會有ERROR
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"action":         "pickup_response",
-			"in_response_to": req.MessageID,
-			"status":         "error",
-			"message":        err.Error(),
-		})
-		return
-	}
-
-	service.LinkTruckToPackage(string(packageID), uint(truckID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"action":          "pickup_response",
-			"in_response_to":  req.MessageID,
-			"tracking_number": packageID,
-			"status":          "error",
-			"message":         err.Error(),
-		})
-		return
-	}
-
-	err = Controller.Sender.SendWorldRequestToGoPickUp(truckID, req.WarehouseID) //Do World Command // 用thread maybe?
-	if err != nil {
-		log.Println("Error sending GoPickUp command:", err)
-	}
+	go queue.PkQueue.AddRequest(&req)
 
 	//respond to Amazon
 	resp := gin.H{

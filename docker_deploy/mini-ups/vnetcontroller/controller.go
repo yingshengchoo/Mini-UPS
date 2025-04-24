@@ -16,6 +16,7 @@ type Controller struct {
 	conn       net.Conn
 }
 
+
 func NewController(conn net.Conn) *Controller {
 	recvW := NewRecvWindow()
 	sendW := NewSendWindow()

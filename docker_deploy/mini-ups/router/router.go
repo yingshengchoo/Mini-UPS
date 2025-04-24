@@ -50,7 +50,7 @@ func InitRouter() *gin.Engine {
 			packageGroup.PUT("/assign-truck", controller.LinkTruckToPackage)
 			packageGroup.PUT("/status", controller.ChangePackageStatus)
 			packageGroup.GET("/warehouse/:packageID", controller.GetWarehouseID)
-
+			packageGroup.POST("/redirect", controller.RedirectPackage)
 		}
 
 		// ups side api for amazon

@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/home/package.css" />
+  <link rel="stylesheet" href="/static/home/redirect.css" />
 </head>
 <body>
   <header>
@@ -34,6 +35,9 @@
         <h3 id="pacakge-title" style="display: none;">Your packages</h3>
         <div id="user-packages"  style="display: none;">
           <div class="package-item" id="package-template" style="display: none;">
+            <div style="text-align: right;">
+              <button class="redirect-btn">Redirect</button>
+            </div>
             <p><strong>package ID:</strong> <span class="package-id"></span></p>
             <p><strong>Contents:</strong> <span class="package-contents"></span></p>
             <p><strong>Delivery Address:</strong> <span class="package-address"></span></p>
@@ -57,5 +61,6 @@
   </main>
 
   <script src="home.js"></script>
+  <script src="redirect.js"></script>
 </body>
 </html>

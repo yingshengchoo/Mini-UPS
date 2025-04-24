@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"mini-ups/dao"
 	"mini-ups/model"
 
@@ -62,4 +63,26 @@ func GetWarehouseID(package_id string) (uint, error) {
 		return 0, err //assuming 0 is not associated with any warehouse
 	}
 	return warehouse_id, nil
+}
+
+// redirect a package
+func RedirectPackage(packageID string, coord *model.Coordinate) error {
+	// todo check access right here
+
+	// check if out of delivery
+	packageModel, err := dao.GetPackagesByPackageID(packageID)
+	if err != nil {
+		return err
+	}
+	// race failed, can not redirect
+	if packageModel.Status == "Delivering" || packageModel.Status == "Delivered" {
+		return errors.New("package already out of delivery")
+	}
+
+	// update
+	_, err = dao.UpdateDeliveryAddress(packageID, *coord)
+	if err != nil {
+		return err
+	}
+	return nil
 }
