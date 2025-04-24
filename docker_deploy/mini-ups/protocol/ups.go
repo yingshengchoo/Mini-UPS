@@ -22,7 +22,7 @@ func CreateTruck(id, x, y int32) *worldupspb.UInitTruck {
 // connectUPS connects to UPS with a given worldID and a list of initial trucks
 // This assumes that Amazon connects first. If we connect first, may consider not providing worldID
 func ConnectUPSWithWorldID(worldID int64, trucks []*worldupspb.UInitTruck) net.Conn {
-	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:12345")
+	conn, err := net.Dial("tcp", util.HOST+":12345")
 	if err != nil {
 		panic(err)
 	}
@@ -30,8 +30,8 @@ func ConnectUPSWithWorldID(worldID int64, trucks []*worldupspb.UInitTruck) net.C
 
 	uconnect := &worldupspb.UConnect{
 		IsAmazon: proto.Bool(false),
-		Worldid:  proto.Int64(worldID),
-		Trucks:   trucks,
+		// Worldid:  proto.Int64(worldID),
+		Trucks: trucks,
 	}
 	if err := util.SendMsg(conn, uconnect); err != nil {
 		panic(err)

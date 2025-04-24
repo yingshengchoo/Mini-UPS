@@ -28,27 +28,27 @@ type PickupReq struct {
 }
 
 var VnetCtrl *vnetcontroller.Controller
-var PkQueue = NewPickupQueue()
+var PkQueue = NewPickupQueue(100)
 
-func NewPickupQueue() *PickupQueue {
+func NewPickupQueue(size uint) *PickupQueue {
 	return &PickupQueue{
-		queue: make(chan *PickupReq),
+		queue: make(chan *PickupReq, size),
 		// availableTrucks: truckNum,
 	}
 }
 
 // add new req
 func (q *PickupQueue) AddRequest(req *PickupReq) {
-	log.Println("here")
+	// log.Println("here")
 	q.queue <- req
 	q.tryConsume()
 }
 
 // try to consume message
 func (q *PickupQueue) tryConsume() {
-	log.Println("here2")
+	// log.Println("here2")
 	for {
-		log.Printf("queue:%d", len(q.queue))
+		log.Printf("queue size:%d", len(q.queue))
 		if len(q.queue) == 0 {
 			break
 		}

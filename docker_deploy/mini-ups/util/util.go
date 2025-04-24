@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 	"mini-ups/config"
 	"net"
 	"sync/atomic"
@@ -39,7 +40,7 @@ func SendMsg(conn net.Conn, msg proto.Message) error {
 		return err
 	}
 
-	fmt.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
+	log.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
 	return nil
 }
 

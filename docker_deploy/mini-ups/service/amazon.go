@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -83,6 +84,6 @@ func sendAmazonPost(payload map[string]interface{}) error {
 		return fmt.Errorf("received non-OK response from Amazon: %d", resp.StatusCode)
 	}
 
-	fmt.Printf("Sent to Amazon: %s\n", payload["action"])
+	log.Printf("Sent to Amazon: %s\n", payload["action"])
 	return nil
 }

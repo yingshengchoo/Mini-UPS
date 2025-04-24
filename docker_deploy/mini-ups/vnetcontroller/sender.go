@@ -2,7 +2,7 @@ package vnetcontroller
 
 import (
 	"encoding/binary"
-	"fmt"
+	"log"
 	"mini-ups/dao"
 	"mini-ups/model"
 	"mini-ups/protocol"
@@ -108,6 +108,6 @@ func (s *Sender) SendMsg(conn net.Conn, msg proto.Message) error {
 		return err
 	}
 
-	fmt.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
+	log.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
 	return nil
 }
