@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"mini-ups/model"
+	"mini-ups/queue"
 	"mini-ups/service"
 	"mini-ups/vnetcontroller"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/datatypes"
 )
 
 var Controller *vnetcontroller.Controller
@@ -101,16 +101,6 @@ func ParseAction(c *gin.Context) {
 
 // POST /api/ups/pickup
 func PickUp(c *gin.Context) {
-	var req struct {
-		Action      string         `json:"action"`
-		PackageID   string         `json:"package_id" binding:"required"`
-		Username    string         `json:"username" binding:"required"`
-		Items       datatypes.JSON `json:"items" binding:"required"`
-		DestX       int            `json:"destination_x" binding:"required"`
-		DestY       int            `json:"destination_y" binding:"required"`
-		WarehouseID uint           `json:"warehouse_id" binding:"required"`
-		MessageID   string         `json:"message_id" binding:"required"`
-	}
 
 	bodyBytes, err := getBodyBytes(c)
 	if err != nil {
@@ -118,7 +108,7 @@ func PickUp(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "invalid request"})
 		return
 	}
-
+	var req queue.PickupReq
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		log.Print(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -144,8 +134,9 @@ func PickUp(c *gin.Context) {
 			"action":         "pickup_response",
 			"in_response_to": req.MessageID,
 			"status":         "error",
-			"message":        "No available truck",
+			"message":        "No available truck now",
 		})
+		//
 		return
 	}
 
