@@ -275,10 +275,10 @@ function copyLink(button) {
     return;
   }
 
-  // 生成分享链接
-  const shareUrl = `https://vcm-46755.vm.dueke.edu:8080/share/${packageID}`;  // 你可以替换成实际域名
+  // generate share link
+  const shareUrl = `http://vcm-46755.vm.duke.edu:8080/share/${packageID}`; 
 
-  // 如果 Clipboard API 不可用，使用 execCommand 作为备选
+  // copy link
   const textArea = document.createElement("textarea");
   textArea.value = shareUrl;
   document.body.appendChild(textArea);
