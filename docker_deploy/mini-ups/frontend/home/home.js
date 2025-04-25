@@ -34,9 +34,8 @@ async function track(pacakgeID) {
 
     const clone = template.cloneNode(true);
     const btn = clone.querySelector(".redirect-btn");
-    const btnContainer = btn?.closest("div");
-    if (btnContainer) {
-      btnContainer.remove();
+    if (btn){
+      btn.remove()
     }
     clone.id = "";
     clone.style.display = "block";
@@ -260,21 +259,33 @@ function copyLink(button) {
   const packageID = card.querySelector('.package-id').innerText.trim();
 
   if (!packageID) {
-    alert("未找到包裹 ID！");
+    // alert("未找到包裹 ID！");
     return;
   }
 
   // 生成分享链接
   const shareUrl = `https://vcm-46755.vm.dueke.edu:8080/share/${packageID}`;  // 你可以替换成实际域名
 
-  // 使用 clipboard API 复制
-  navigator.clipboard.writeText(shareUrl).then(() => {
-    const status = card.querySelector('.copy-status');
-    status.style.display = 'inline';
-    setTimeout(() => {
-      status.style.display = 'none';
-    }, 2000);
-  }).catch(err => {
-    alert("复制失败：" + err);
-  });
+  // 如果 Clipboard API 不可用，使用 execCommand 作为备选
+  const textArea = document.createElement("textarea");
+  textArea.value = shareUrl;
+  document.body.appendChild(textArea);
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      const status = card.querySelector('.copy-status');
+      status.style.display = 'inline';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 2000);
+    } else {
+      alert("fail to copy");
+    }
+  } catch (err) {
+    alert("fail to copy: " + err);
+  }
+
+  document.body.removeChild(textArea);
 }
