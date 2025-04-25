@@ -79,6 +79,7 @@ func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 			continue
 		}
 
+		log.Println("do this once:", seqnum)
 		//update package and truck status
 		if status == "ARRIVE WAREHOUSE" {
 			//query request based on seqnum and get the warehouseID
