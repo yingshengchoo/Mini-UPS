@@ -1,7 +1,10 @@
 // track button
-async function track() {
+async function track(pacakgeID) {
 
-  const trackingNumber = document.getElementById('trackingNumber').value;
+  var trackingNumber = document.getElementById('trackingNumber').value;
+  if (pacakgeID != null){
+    trackingNumber = pacakgeID
+  }
   const resultEl = document.getElementById('result');
   resultEl.style.display = 'block';
   resultEl.innerText = 'tracking...';
@@ -31,9 +34,8 @@ async function track() {
 
     const clone = template.cloneNode(true);
     const btn = clone.querySelector(".redirect-btn");
-    const btnContainer = btn?.closest("div");
-    if (btnContainer) {
-      btnContainer.remove();
+    if (btn){
+      btn.remove()
     }
     clone.id = "";
     clone.style.display = "block";
@@ -83,14 +85,6 @@ window.addEventListener('DOMContentLoaded', init);
 async function init() {
   await getUserInfo();
   await getPackageInfo();
-
-  const trackingInput = document.getElementById('trackingNumber');
-  trackingInput.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      track();
-    }
-  });
 }
 
 // get user info
@@ -268,4 +262,42 @@ const formatDate = (dateStr) => {
 // sleep for test
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function copyLink(button) {
+  // 获取当前按钮所在的 package-item
+  const card = button.closest('.package-item');
+  // 从 span 中获取 packageID
+  const packageID = card.querySelector('.package-id').innerText.trim();
+
+  if (!packageID) {
+    // alert("未找到包裹 ID！");
+    return;
+  }
+
+  // 生成分享链接
+  const shareUrl = `https://vcm-46755.vm.dueke.edu:8080/share/${packageID}`;  // 你可以替换成实际域名
+
+  // 如果 Clipboard API 不可用，使用 execCommand 作为备选
+  const textArea = document.createElement("textarea");
+  textArea.value = shareUrl;
+  document.body.appendChild(textArea);
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      const status = card.querySelector('.copy-status');
+      status.style.display = 'inline';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 2000);
+    } else {
+      alert("fail to copy");
+    }
+  } catch (err) {
+    alert("fail to copy: " + err);
+  }
+
+  document.body.removeChild(textArea);
 }

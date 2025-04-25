@@ -2,6 +2,7 @@ package router
 
 import (
 	"mini-ups/controller"
+	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -12,15 +13,35 @@ func InitRouter() *gin.Engine {
 	router := gin.Default()
 
 	store := cookie.NewStore([]byte("mini-ups-secret"))
+
 	router.Use(sessions.Sessions("mini-ups-session", store))
+	store.Options(sessions.Options{
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // 如果没有启用 HTTPS，可以设置为 false
+		SameSite: http.SameSiteLaxMode,
+		Domain:   "vcm-46755.vm.duke.edu",
+	})
+
+	// router.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"http://vcm-46755.vm.duke.edu"}, // 允许的前端地址
+	// 	AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+	// 	AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+	// 	AllowCredentials: true, // 允许携带凭证（cookies）
+	// }))
 
 	router.Static("/static", "./frontend")
 	router.Static("/home", "./frontend/home")
 	router.Static("/login", "./frontend/login")
 	router.Static("/register", "./frontend/register")
 	router.Static("/devtool", "./frontend/devtool")
+	router.LoadHTMLGlob("frontend/home/home.html")
 
 	router.GET("/users/:username", controller.GetUserByUsername)
+	router.GET("/share/:packageID", controller.GetShareInfo)
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", nil)
+	})
 
 	apiGroup := router.Group("/api")
 	{

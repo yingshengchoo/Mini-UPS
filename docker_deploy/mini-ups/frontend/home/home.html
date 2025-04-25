@@ -17,7 +17,7 @@
     <div class="card">
       <h2>Package tracking</h2>
       <input type="text" id="trackingNumber" placeholder="Enter pacakge ID..." />
-      <button onclick="track()">Track</button>
+      <button onclick="track(null)">Track</button>
       <div class="result" id="result" style="display: none;"></div>
       <p id="track-package"  style="display: none;">
         <!-- place for package info card -->
@@ -35,8 +35,11 @@
         <h3 id="pacakge-title" style="display: none;">Your packages</h3>
         <div id="user-packages"  style="display: none;">
           <div class="package-item" id="package-template" style="display: none;">
-            <div style="text-align: right;">
+
+            <div style="float: right; text-align: right;">
               <button class="redirect-btn">Redirect</button>
+              <button onclick="copyLink(this)">Copy link</button>
+              <span class="copy-status" style="color: green; font-size: 12px; display: none;">Copyed!</span>
             </div>
             <p><strong>package ID:</strong> <span class="package-id"></span></p>
             <p><strong>Contents:</strong> <span class="package-contents"></span></p>
@@ -60,7 +63,19 @@
     </div>
   </main>
 
-  <script src="home.js"></script>
-  <script src="redirect.js"></script>
+  <script src="/home/home.js"></script>
+  <script src="/home/redirect.js"></script>
+  <script>
+    var packageID = "{{.packageID}}";
+
+// 检查数据是否有效
+if (/^\d+$/.test(packageID)) {
+    // 如果数据有效，更新页面
+    console.log(" package ID :",packageID);
+    track(packageID)
+} else {
+    console.log("No package ID found.");
+}
+  </script>
 </body>
 </html>
