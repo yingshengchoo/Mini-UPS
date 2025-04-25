@@ -11,7 +11,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var HOST = config.GetEnvOrDefault("WORLD_HOST", "vcm-47478.vm.duke.edu:12345") // Changed based on HOST
+var WORLD_HOST = config.GetEnvOrDefault("WORLD_HOST", "vcm-47478.vm.duke.edu:12345") // Changed based on HOST
+var UPS_HOST = config.GetEnvOrDefault("UPS_HOST", "vcm-47478.vm.duke.edu:8080")      // Changed based on HOST
 
 var UPSConn net.Conn
 

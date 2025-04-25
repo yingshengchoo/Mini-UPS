@@ -2,6 +2,7 @@ package router
 
 import (
 	"mini-ups/controller"
+	"mini-ups/util"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -39,6 +40,10 @@ func InitRouter() *gin.Engine {
 
 	router.GET("/users/:username", controller.GetUserByUsername)
 	router.GET("/share/:packageID", controller.GetShareInfo)
+	router.GET("/share/upshost", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"upshost": util.UPS_HOST})
+	})
+
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home.html", nil)
 	})

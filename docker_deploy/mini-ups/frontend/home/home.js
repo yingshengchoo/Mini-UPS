@@ -264,7 +264,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function copyLink(button) {
+async function copyLink(button) {
   // 获取当前按钮所在的 package-item
   const card = button.closest('.package-item');
   // 从 span 中获取 packageID
@@ -276,7 +276,12 @@ function copyLink(button) {
   }
 
   // generate share link
-  const shareUrl = `http://vcm-46755.vm.duke.edu:8080/share/${packageID}`; 
+  const response = await fetch(`/share/upshost`,{ 
+    method:"GET",
+    credentials:"include"
+  })
+  var data = await response.json()
+  const shareUrl = `http://${data.upshost}:8080/share/${packageID}`; 
 
   // copy link
   const textArea = document.createElement("textarea");

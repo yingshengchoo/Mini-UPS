@@ -44,7 +44,7 @@ func ConnectAmazon(warehouses []*worldamazonpb.AInitWarehouse) (net.Conn, int64)
 }
 
 func ConnectAmazonWithWorldID(worldID int64, warehouses []*worldamazonpb.AInitWarehouse) net.Conn {
-	conn, err := net.Dial("tcp", util.HOST)
+	conn, err := net.Dial("tcp", util.WORLD_HOST)
 	if err != nil {
 		panic(err)
 	}
