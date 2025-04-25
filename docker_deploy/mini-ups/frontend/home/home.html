@@ -37,6 +37,8 @@
           <div class="package-item" id="package-template" style="display: none;">
             <div style="text-align: right;">
               <button class="redirect-btn">Redirect</button>
+              <button onclick="copyLink(this)">复制链接</button>
+              <span class="copy-status" style="color: green; font-size: 12px; display: none;">已复制！</span>
             </div>
             <p><strong>package ID:</strong> <span class="package-id"></span></p>
             <p><strong>Contents:</strong> <span class="package-contents"></span></p>
@@ -66,7 +68,7 @@
     var packageID = "{{.packageID}}";
 
 // 检查数据是否有效
-if (packageID) {
+if (/^\d+$/.test(packageID)) {
     // 如果数据有效，更新页面
     console.log(" package ID :",packageID);
     track(packageID)

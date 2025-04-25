@@ -60,6 +60,7 @@ func LoginUser(username, password string, c *gin.Context) error {
 	log.Println("match successfully")
 	session := sessions.Default(c)
 	session.Set("user", username)
+	log.Println(username)
 	err = session.Save()
 	if err != nil {
 		log.Println("Failed to save session:", err)

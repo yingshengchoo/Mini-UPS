@@ -252,3 +252,29 @@ const formatDate = (dateStr) => {
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function copyLink(button) {
+  // 获取当前按钮所在的 package-item
+  const card = button.closest('.package-item');
+  // 从 span 中获取 packageID
+  const packageID = card.querySelector('.package-id').innerText.trim();
+
+  if (!packageID) {
+    alert("未找到包裹 ID！");
+    return;
+  }
+
+  // 生成分享链接
+  const shareUrl = `https://vcm-46755.vm.dueke.edu:8080/share/${packageID}`;  // 你可以替换成实际域名
+
+  // 使用 clipboard API 复制
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    const status = card.querySelector('.copy-status');
+    status.style.display = 'inline';
+    setTimeout(() => {
+      status.style.display = 'none';
+    }, 2000);
+  }).catch(err => {
+    alert("复制失败：" + err);
+  });
+}
