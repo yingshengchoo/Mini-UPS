@@ -3,7 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -15,7 +15,8 @@ import (
 //UPDATE HERE: Make sure to move the listening to response from Service UPS to here!
 //We send Amazon POST request -> We listen to their response
 
-const amazonURL = "http://localhost:8000/api/amazon" //是這個ＵＲＬ嗎
+// const amazonURL = "http://localhost:8000/api/amazon" //是這個ＵＲＬ嗎
+const amazonURL = "http://vcm-46910.vm.duke.edu:8000/api/ups"
 
 // Send Request to Amazon, notifying that the Delivery was complete
 func NotifyAmazonDeliveryComplete(packageID string, truckID, x, y int) error {
@@ -66,22 +67,34 @@ func SendQueryStatusToAmazon(packageID string) error {
 	return sendAmazonPost(msg)
 }
 
+func SendWorldIDToAmazon(worldID int) error {
+	msg := gin.H{
+		"action":     "world_created",
+		"message_id": uuid.New().String(),
+		"world_id":   worldID,
+	}
+	return sendAmazonPost(msg)
+}
+
 // helper function to send Post Request
 func sendAmazonPost(payload map[string]interface{}) error {
 	data, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
+		log.Printf("failed to marshal payload: %v", err)
+		return err
 	}
 
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Post(amazonURL, "application/json", bytes.NewBuffer(data)) // Change URL
 	if err != nil {
-		return fmt.Errorf("HTTP POST failed: %w", err)
+		log.Printf("HTTP POST failed: %v", err)
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-OK response from Amazon: %d", resp.StatusCode)
+		log.Printf("received non-OK response from Amazon: %d", resp.StatusCode)
+		return errors.New("non-OK response from Amazon")
 	}
 
 	log.Printf("Sent to Amazon: %s\n", payload["action"])

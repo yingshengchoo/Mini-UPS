@@ -8,6 +8,7 @@ import (
 	"mini-ups/protocol/worldupspb"
 	"mini-ups/queue"
 	"mini-ups/router"
+	"mini-ups/service"
 	"mini-ups/util"
 	"mini-ups/vnetcontroller"
 )
@@ -24,9 +25,17 @@ func main() {
 		protocol.CreateTruck(1, 100, 200),
 		protocol.CreateTruck(2, 150, 250),
 	}
-	worldID := int64(1) //<- make this dynamic in the future
-	util.UPSConn = protocol.ConnectUPSWithWorldID(worldID, trucks)
-	// UPSConn, worldID = protocol.ConnectUPS(trucks)
+
+	service.RegisterTruck(1, 100, 200)
+	service.RegisterTruck(2, 150, 250)
+
+	//worldID := int64(1) //<- make this dynamic in the future
+	//util.UPSConn = protocol.ConnectUPSWithWorldID(worldID, trucks)
+	UPSConn, worldID := protocol.ConnectUPS(trucks)
+	util.UPSConn = UPSConn
+	//send World ID to amazon
+	log.Print(worldID)
+	//service.SendWorldIDToAmazon(int(worldID))
 
 	vnetCtrl := vnetcontroller.NewController(util.UPSConn)
 	vnetCtrl.Start() //world response listener

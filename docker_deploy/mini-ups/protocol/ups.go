@@ -46,14 +46,14 @@ func ConnectUPSWithWorldID(worldID int64, trucks []*worldupspb.UInitTruck) net.C
 }
 
 func ConnectUPS(trucks []*worldupspb.UInitTruck) (net.Conn, int64) {
-	conn, err := net.Dial("tcp", util.HOST)
+	conn, err := net.Dial("tcp", util.HOST+":12345")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("Sending UConnect...")
 
 	aconnect := &worldupspb.UConnect{
-		IsAmazon: proto.Bool(true),
+		IsAmazon: proto.Bool(false),
 		Trucks:   trucks,
 	}
 

@@ -3,7 +3,7 @@ services:
   mydb:
     image: postgres:12-alpine3.15
     environment:
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: abc123
       POSTGRES_USER: postgres
       POSTGRES_DB: worldSim
     networks:
@@ -22,14 +22,14 @@ services:
       - mydb
 
   upsdb:
-    image: postgres:15-alpine 
+    image: postgres:15-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=miniups
     # volumes:
-    #   - postgres_data:/var/lib/postgresql/data 
-      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql 
+    #   - postgres_data:/var/lib/postgresql/data
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "7777:5432"  # expose port
     networks:
@@ -53,9 +53,9 @@ services:
     networks:
       - mynetwork
     depends_on:
-      upsdb:  
-        condition: service_healthy 
-    command: air 
+      upsdb:
+        condition: service_healthy
+    command: air
 
 
 networks:

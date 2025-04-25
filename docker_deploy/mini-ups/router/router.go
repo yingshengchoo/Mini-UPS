@@ -55,7 +55,7 @@ func InitRouter() *gin.Engine {
 
 		// ups side api for amazon
 		// parse json's action to different further api
-		amazonGroup := apiGroup.Group("/ups")
+		amazonGroup := apiGroup.Group("/amazon")
 		{
 			amazonGroup.POST("/", controller.ParseAction)
 			amazonGroup.POST("/pickup", controller.PickUp)
