@@ -53,7 +53,7 @@ async function track() {
 
     // show this ele
     container.appendChild(clone);
-    
+
     // hide message bar
     resultEl.style.display = 'none';
   } catch (e) {
@@ -83,6 +83,14 @@ window.addEventListener('DOMContentLoaded', init);
 async function init() {
   await getUserInfo();
   await getPackageInfo();
+
+  const trackingInput = document.getElementById('trackingNumber');
+  trackingInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      track();
+    }
+  });
 }
 
 // get user info
@@ -166,7 +174,10 @@ async function getPackageInfo() {
 
       clone.id = "";
       clone.style.display = "block";
-
+      const btn = clone.querySelector('.redirect-btn')
+      if (pkg.status === 'out_for_delivery' || pkg.status === 'delivered') {
+        btn.disabled = true;
+      }
       clone.querySelector('.package-id').textContent = pkg.package_id;
       clone.querySelector('.package-contents').textContent = `${formatItems(pkg.items)}`;
       clone.querySelector('.package-address').textContent = `(${pkg.coord.x}, ${pkg.coord.y})`;
@@ -187,14 +198,14 @@ async function getPackageInfo() {
   }
 }
 
-
-const statusOrder = [
-  "created", "packed", "picked", "loaded", "delivering", "delivered"
+const dbStatusOrder = [
+  "created", "packed", "pickup_complete", "loaded", "out_for_delivery", "delivered"
 ];
+
 
 function highlightProgressBar(container, currentStatus) {
   const steps = container.querySelectorAll('.step');
-  const currentIndex = statusOrder.indexOf(currentStatus.toLowerCase());
+  const currentIndex = dbStatusOrder.indexOf(currentStatus.toLowerCase());
 
   steps.forEach((step, index) => {
     if (index <= currentIndex) {
@@ -219,6 +230,16 @@ const fakeData = [
     id: 2,
     name: "Package 2",
     details: "Documents",
+    content: "Paperwork",
+    address: "456 Avenue, City, Country",
+    status: "packed",
+    location: "Warehouse B",
+    updatedAt: "2025-04-19T14:00:00"
+  },
+  {
+    id: 2,
+    name: "Package 3",
+    details: "Funiture",
     content: "Paperwork",
     address: "456 Avenue, City, Country",
     status: "packed",

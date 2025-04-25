@@ -145,7 +145,14 @@ func RespondPackageReady(c *gin.Context) {
 	// TODO implement
 
 	//看不懂這是用來做什麼
-
+	resp := gin.H{
+		"action":         "package_ready_response",
+		"message_id":     "",
+		"in_response_to": "",
+		"status":         "success",
+		"message":        "",
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // POST /api/ups/load
