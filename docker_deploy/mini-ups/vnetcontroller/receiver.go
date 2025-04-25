@@ -2,6 +2,7 @@ package vnetcontroller
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"mini-ups/model"
 	"mini-ups/protocol/worldupspb"
@@ -25,7 +26,12 @@ func (r *Receiver) ListenForWorldResponses(conn net.Conn) {
 	for {
 		resp := &worldupspb.UResponses{}
 		if err := r.RecvMsg(conn, resp); err != nil {
+			log.Print(resp)
 			fmt.Println("Error receiving world response:", err)
+			if err == io.EOF {
+				// Gracefully handle EOF, e.g., connection closed
+				return
+			}
 			continue
 		}
 		log.Print(resp)

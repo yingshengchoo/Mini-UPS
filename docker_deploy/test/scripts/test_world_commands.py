@@ -263,16 +263,16 @@ def simulate_ups_disconnect(sock):
 def main():
     print("Full simulation beginning...")
     amazon_sock, worldid = connect_amazon()
-    ups_sock = connect_ups(worldid)
+    # ups_sock = connect_ups(worldid)
 
-    simulate_amazon_flow(amazon_sock)
-    simulate_ups_pickup(ups_sock)
+    # simulate_amazon_flow(amazon_sock)
+    # simulate_ups_pickup(ups_sock)
     # simulate_amazon_load_and_put(amazon_sock)
     # simulate_ups_deliver(ups_sock)
     # simulate_amazon_disconnect(amazon_sock)
     # simulate_ups_disconnect(ups_sock)
-    amazon_sock.close()
-    ups_sock.close()
+    # amazon_sock.close()
+    # ups_sock.close()
     print("Simulation complete")
 
 if __name__ == "__main__":

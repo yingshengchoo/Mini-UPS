@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -89,6 +90,12 @@ func sendAmazonPost(payload map[string]interface{}) error {
 	if err != nil {
 		log.Printf("HTTP POST failed: %v", err)
 		return err
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading body:", err)
+	} else {
+		log.Println("Response body:", string(bodyBytes))
 	}
 	defer resp.Body.Close()
 
