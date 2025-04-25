@@ -2,6 +2,8 @@ package vnetcontroller
 
 import (
 	"container/list"
+	"log"
+	"mini-ups/protocol/worldupspb"
 	"sync"
 	"time"
 )
@@ -58,7 +60,7 @@ func (sw *SendWindow) Ack(seqnum int64) {
 	}
 }
 
-func (sw *SendWindow) ResendStaleResponses(resendFunc func(seqnum int64, msgType string, msg interface{})) {
+func (sw *SendWindow) ResendStaleResponses(pickups []*worldupspb.UGoPickup, queries []*worldupspb.UQuery, deliveries []*worldupspb.UGoDeliver, seqnums []int64, resendFunc func(seqnum int64, msgType string, msg interface{})) {
 	sw.mu.Lock()
 	defer sw.mu.Unlock()
 
@@ -67,13 +69,15 @@ func (sw *SendWindow) ResendStaleResponses(resendFunc func(seqnum int64, msgType
 		node := e.Value.(*ResponseNode)
 		next := e.Next()
 
-		if now.Sub(node.TimeAdded) > 5*time.Minute {
+		if now.Sub(node.TimeAdded) > 5*time.Second {
 			// Resend the message
+			log.Printf("resend: %d, %s", node.SeqNum, node.MsgType)
+
 			resendFunc(node.SeqNum, node.MsgType, node.Msg)
 
 			// Remove the node
-			sw.respList.Remove(e)
-			delete(sw.seqMap, node.SeqNum)
+			// sw.respList.Remove(e)
+			// delete(sw.seqMap, node.SeqNum)
 		}
 
 		e = next

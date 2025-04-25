@@ -111,7 +111,7 @@ func CreateUPSCommands(
 	return &worldupspb.UCommands{
 		Pickups:    pickups,
 		Deliveries: deliveries,
-		Simspeed:   proto.Uint32(simspeed),
+		Simspeed:   proto.Uint32(100),
 		Disconnect: proto.Bool(disconnect),
 		Queries:    queries,
 		Acks:       acks,

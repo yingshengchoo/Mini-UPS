@@ -7,6 +7,7 @@ import (
 	"mini-ups/model"
 	"mini-ups/protocol"
 	"mini-ups/protocol/worldupspb"
+	"mini-ups/service"
 	"mini-ups/util"
 	"net"
 
@@ -30,6 +31,7 @@ func NewSender(rw *RecvWindow, sw *SendWindow, conn net.Conn) *Sender {
 func (s *Sender) Send(msg proto.Message) error {
 	err := s.SendMsg(s.conn, msg)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return nil
@@ -37,17 +39,17 @@ func (s *Sender) Send(msg proto.Message) error {
 
 func (s *Sender) SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint) error {
 	seqnum := util.GenerateSeqNum()
-	cmd := &worldupspb.UCommands{
-		Pickups: []*worldupspb.UGoPickup{{
-			Truckid: proto.Int32(int32(truckID)),
-			Whid:    proto.Int32(int32(warehouseID)),
-			Seqnum:  proto.Int64(seqnum),
-		}},
-	}
 
+	goPickup := protocol.CreateGoPickupCommand(int32(truckID), int32(warehouseID), seqnum)
+	cmd := protocol.CreateUPSCommands([]*worldupspb.UGoPickup{goPickup}, nil, 0, false, nil, nil)
+
+	if err := service.ChangeTruckStatus(int(truckID), model.TruckStatus.PICKING); err != nil {
+		log.Println(err)
+		return err
+	}
 	// fmt.Printf("Sending UGoPickup command: TruckID=%d, WarehouseID=%d, Seqnum=%d\n", truckID, warehouseID, seqnum) //debugging
 
-	s.addMsg(seqnum, "UGoPickup", cmd)
+	s.addMsg(seqnum, "UGoPickup", goPickup)
 	return s.Send(cmd)
 }
 
@@ -62,7 +64,7 @@ func (s *Sender) SendWorldDeliveryRequest(packageID string) error {
 	goDeliver := protocol.MakeDelivery(int32(*pack.TruckID), seqnum, []*worldupspb.UDeliveryLocation{delivery})
 	cmd := protocol.CreateUPSCommands(nil, []*worldupspb.UGoDeliver{goDeliver}, 0, false, nil, nil)
 
-	s.addMsg(seqnum, "UGoDeliver", cmd)
+	s.addMsg(seqnum, "UGoDeliver", goDeliver)
 
 	return s.Send(cmd)
 }
@@ -73,7 +75,7 @@ func (s *Sender) SendWorldTruckQuery(truckID model.TruckID) error {
 	seqnum := util.GenerateSeqNum()
 	query := protocol.MakeTruckQuery(int32(truckID), seqnum)
 	cmd := protocol.CreateUPSCommands(nil, nil, 0, false, []*worldupspb.UQuery{query}, nil)
-	s.addMsg(seqnum, "UQuery", cmd)
+	s.addMsg(seqnum, "UQuery", query)
 	return s.Send(cmd)
 }
 
