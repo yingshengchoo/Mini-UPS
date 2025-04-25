@@ -44,9 +44,9 @@ services:
     build: ./mini-ups/
     ports:
       - "8080:8080"
-    volumes:
-      - .:/app
-    working_dir: /app/mini-ups
+    # volumes:
+    #   - ./mini-ups:/app
+    # working_dir: /app
     environment:
       - DB_HOST=upsdb
       - WORLD_HOST=server
@@ -56,7 +56,7 @@ services:
     depends_on:
       upsdb:
         condition: service_healthy
-    command: air
+    # command: air
 
 
 networks:

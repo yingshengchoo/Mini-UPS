@@ -1,37 +1,37 @@
 # dev mode
-FROM golang:1.24.2
+# FROM golang:1.24.2
 
-WORKDIR /app
+# WORKDIR /app
 
-RUN go install github.com/air-verse/air@latest
+# RUN go install github.com/air-verse/air@latest
 
-COPY . .
+# COPY . .
 
-EXPOSE 8080
+# EXPOSE 8080
 
-CMD ["air"]
+# CMD ["air"]
 
 
 # product mode
 
-# FROM golang:1.24.2 as buidler
+FROM golang:1.24.2 as builder
 
-# WORKDIR /app
+WORKDIR /app
 
-# COPY go.mod go.sum ./
+COPY go.mod go.sum ./
 
-# RUN go mod download
+RUN go mod download
 
-# COPY . /app/
+COPY . /app/
 
-# RUN go build -o main .
+RUN go build -o main .
 
 # FROM alpine:latest
 
 # WORKDIR /root/
 
-# COPY --from=builder /app/app .
+# COPY --from=builder /app/main .
 
-# EXPOSE 8080
+EXPOSE 8080
 
-# CMD ["./app"]
+CMD ["./main"]
