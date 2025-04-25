@@ -150,3 +150,11 @@ func RedirectPackage(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
+
+// share link
+// GET /share/:packageID"
+func GetShareInfo(c *gin.Context) {
+	packageID := c.Param("packageID")
+	// log.Println("okk")
+	c.HTML(http.StatusOK, "home.html", gin.H{"packageID": packageID})
+}

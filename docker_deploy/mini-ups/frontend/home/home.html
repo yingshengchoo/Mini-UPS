@@ -17,7 +17,7 @@
     <div class="card">
       <h2>Package tracking</h2>
       <input type="text" id="trackingNumber" placeholder="Enter pacakge ID..." />
-      <button onclick="track()">Track</button>
+      <button onclick="track(null)">Track</button>
       <div class="result" id="result" style="display: none;"></div>
       <p id="track-package"  style="display: none;">
         <!-- place for package info card -->
@@ -60,7 +60,19 @@
     </div>
   </main>
 
-  <script src="home.js"></script>
-  <script src="redirect.js"></script>
+  <script src="/home/home.js"></script>
+  <script src="/home/redirect.js"></script>
+  <script>
+    var packageID = "{{.packageID}}";
+
+// 检查数据是否有效
+if (packageID) {
+    // 如果数据有效，更新页面
+    console.log(" package ID :",packageID);
+    track(packageID)
+} else {
+    console.log("No package ID found.");
+}
+  </script>
 </body>
 </html>

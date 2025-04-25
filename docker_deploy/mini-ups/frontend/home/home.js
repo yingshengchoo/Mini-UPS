@@ -1,7 +1,10 @@
 // track button
-async function track() {
+async function track(pacakgeID) {
 
-  const trackingNumber = document.getElementById('trackingNumber').value;
+  var trackingNumber = document.getElementById('trackingNumber').value;
+  if (pacakgeID != null){
+    trackingNumber = pacakgeID
+  }
   const resultEl = document.getElementById('result');
   resultEl.style.display = 'block';
   resultEl.innerText = 'tracking...';
@@ -83,6 +86,7 @@ window.addEventListener('DOMContentLoaded', init);
 async function init() {
   await getUserInfo();
   await getPackageInfo();
+  // await track()
 }
 
 // get user info

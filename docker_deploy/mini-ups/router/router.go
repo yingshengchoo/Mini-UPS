@@ -2,6 +2,7 @@ package router
 
 import (
 	"mini-ups/controller"
+	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -19,8 +20,13 @@ func InitRouter() *gin.Engine {
 	router.Static("/login", "./frontend/login")
 	router.Static("/register", "./frontend/register")
 	router.Static("/devtool", "./frontend/devtool")
+	router.LoadHTMLGlob("frontend/home/home.html")
 
 	router.GET("/users/:username", controller.GetUserByUsername)
+	router.GET("/share/:packageID", controller.GetShareInfo)
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "home.html", nil)
+	})
 
 	apiGroup := router.Group("/api")
 	{
