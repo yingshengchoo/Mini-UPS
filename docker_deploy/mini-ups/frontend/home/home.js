@@ -1,9 +1,9 @@
 // track button
-async function track(pacakgeID) {
+async function track(packageID) {
 
   var trackingNumber = document.getElementById('trackingNumber').value;
-  if (pacakgeID != null){
-    trackingNumber = pacakgeID
+  if (packageID != null){
+    trackingNumber = packageID
   }
   const resultEl = document.getElementById('result');
   resultEl.style.display = 'block';
@@ -23,7 +23,7 @@ async function track(pacakgeID) {
 
     const container = document.getElementById('track-package');
     const template = document.getElementById('package-template');
-    const title = document.getElementById('pacakge-title');
+    const title = document.getElementById('package-title');
 
     // show title
     title.style.display = "block";
@@ -34,8 +34,10 @@ async function track(pacakgeID) {
 
     const clone = template.cloneNode(true);
     const btn = clone.querySelector(".redirect-btn");
+    const btn2 = clone.querySelector(".prioritize-btn");
     if (btn){
       btn.remove()
+      btn2.remove()
     }
     clone.id = "";
     clone.style.display = "block";
@@ -149,11 +151,11 @@ async function getPackageInfo() {
 
 
     // // use fake data now
-    sessionStorage.setItem("packages", packages);
+    //sessionStorage.setItem("packages", packages);
 
     const container = document.getElementById('user-packages');
     const template = document.getElementById('package-template');
-    const title = document.getElementById('pacakge-title');
+    const title = document.getElementById('package-title');
 
     // show title
     title.style.display = "block";
@@ -169,8 +171,10 @@ async function getPackageInfo() {
       clone.id = "";
       clone.style.display = "block";
       const btn = clone.querySelector('.redirect-btn')
+      const btn2 = clone.querySelector(".prioritize-btn");
       if (pkg.status === 'out_for_delivery' || pkg.status === 'delivered') {
         btn.disabled = true;
+        btn2.disabled = true;
       }
       clone.querySelector('.package-id').textContent = pkg.package_id;
       clone.querySelector('.package-contents').textContent = `${formatItems(pkg.items)}`;
@@ -276,12 +280,12 @@ async function copyLink(button) {
   }
 
   // generate share link
-  const response = await fetch(`/share/upshost`,{ 
+  const response = await fetch(`/share/upshost`,{
     method:"GET",
     credentials:"include"
   })
   var data = await response.json()
-  const shareUrl = `http://${data.upshost}:8080/share/${packageID}`; 
+  const shareUrl = `http://${data.upshost}:8080/share/${packageID}`;
 
   // copy link
   const textArea = document.createElement("textarea");
@@ -305,4 +309,23 @@ async function copyLink(button) {
   }
 
   document.body.removeChild(textArea);
+}
+
+
+async function prioritizePackage(button) {
+  // 获取当前按钮所在的 package-item
+  const card = button.closest('.package-item');
+  // 从 span 中获取 packageID
+  const packageID = card.querySelector('.package-id').innerText.trim();
+  if (!packageID) {
+    // alert("未找到包裹 ID！");
+    return;
+  }
+
+  const res = await fetch(`/api/package/prioritize/${packageID}`, {
+    method: "POST",
+    credentials: "include",
+  })
+
+  if (!res.ok) throw new Error('Fail to logout');
 }

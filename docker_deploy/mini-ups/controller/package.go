@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"mini-ups/model"
+	"mini-ups/queue"
 	"mini-ups/service"
 	"net/http"
 
@@ -157,4 +158,9 @@ func GetShareInfo(c *gin.Context) {
 	packageID := c.Param("packageID")
 	// log.Println("okk")
 	c.HTML(http.StatusOK, "home.html", gin.H{"packageID": packageID})
+}
+
+func PrioritizePackage(c *gin.Context) {
+	packageID := c.Param("packageID")
+	queue.PkQueue.PrioritizePackage(packageID)
 }

@@ -9,8 +9,10 @@ import (
 	"mini-ups/model"
 	"mini-ups/queue"
 	"mini-ups/service"
+	"mini-ups/util"
 	"mini-ups/vnetcontroller"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -119,12 +121,13 @@ func PickUp(c *gin.Context) {
 		})
 		return
 	}
-	packageID, err := service.CreatePackage(req.PackageID, req.Username, req.Items, req.DestX, req.DestY, req.WarehouseID)
+	pid := strconv.FormatInt(util.GeneratePackageID(), 10)
+	packageID, err := service.CreatePackage(pid, req.Username, req.Items, req.DestX, req.DestY, req.WarehouseID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	req.PackageID = string(packageID)
 	// goroutine send world pickup
 	go queue.PkQueue.AddRequest(&req)
 

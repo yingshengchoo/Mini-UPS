@@ -18,6 +18,12 @@ var UPSConn net.Conn
 
 var seqnum int64
 
+var globalPackageID int64
+
+func GeneratePackageID() int64 {
+	return atomic.AddInt64(&globalPackageID, 1)
+}
+
 func GenerateSeqNum() int64 {
 	return atomic.AddInt64(&seqnum, 1)
 }

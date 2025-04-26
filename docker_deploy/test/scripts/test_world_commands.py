@@ -30,7 +30,8 @@ from io import BytesIO
 #
 # Aside from the commands above : A/UQuery (UPS returns UTruck, Amazon returns APackage)
 # Aside from the responses above: A/UErr, APackage, UTruck
-HOST = 'vcm-47478.vm.duke.edu'
+# HOST = 'vcm-46755.vm.duke.edu'
+HOST = 'vcm 47478.vm.duke.edu'
 UPS_PORT = 12345
 AMAZON_PORT = 23456
 def send_msg(sock, msg):
@@ -68,6 +69,8 @@ def connect_amazon():
     print("Sending AConnect...")
     aconnect = amazon_pb2.AConnect()
     aconnect.isAmazon = True
+
+    aconnect.worldid = 1
     wh = aconnect.initwh.add()
     wh.id = 1
     wh.x = 10
@@ -76,7 +79,7 @@ def connect_amazon():
     send_msg(sock, aconnect)
     response = recv_msg(sock, amazon_pb2.AConnected)
     print("AConnected:", response)
-    return sock, response.worldid
+    return sock
 
 
 def connect_ups(worldid):
@@ -262,7 +265,7 @@ def simulate_ups_disconnect(sock):
 
 def main():
     print("Full simulation beginning...")
-    amazon_sock, worldid = connect_amazon()
+    amazon_sock = connect_amazon()
     # ups_sock = connect_ups(worldid)
 
     # simulate_amazon_flow(amazon_sock)
@@ -273,6 +276,9 @@ def main():
     # simulate_ups_disconnect(ups_sock)
     # amazon_sock.close()
     # ups_sock.close()
+    while True :
+        pass
+
     print("Simulation complete")
 
 if __name__ == "__main__":

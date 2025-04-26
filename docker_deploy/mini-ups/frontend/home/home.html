@@ -16,7 +16,7 @@
   <main>
     <div class="card">
       <h2>Package tracking</h2>
-      <input type="text" id="trackingNumber" placeholder="Enter pacakge ID..." />
+      <input type="text" id="trackingNumber" placeholder="Enter package ID..." />
       <button onclick="track(null)">Track</button>
       <div class="result" id="result" style="display: none;"></div>
       <p id="track-package"  style="display: none;">
@@ -32,19 +32,20 @@
         <button id="btn-logout" onclick="logout()" style="display: none;">Log out</button>
 
         <!-- show package info -->
-        <h3 id="pacakge-title" style="display: none;">Your packages</h3>
+        <h3 id="package-title" style="display: none;">Your packages</h3>
         <div id="user-packages"  style="display: none;">
           <div class="package-item" id="package-template" style="display: none;">
 
             <div style="float: right; text-align: right;">
               <button class="redirect-btn">Redirect</button>
+              <button class="prioritize-btn" onclick="prioritizePackage(this)">Prioritize Package</button>
               <button onclick="copyLink(this)">Copy link</button>
               <span class="copy-status" style="color: green; font-size: 12px; display: none;">Copyed!</span>
             </div>
             <p><strong>package ID:</strong> <span class="package-id"></span></p>
-            <p><strong>Contents:</strong> <span class="package-contents"></span></p>
             <p><strong>Delivery Address:</strong> <span class="package-address"></span></p>
             <p><strong>Status:</strong> <span class="package-status"></span></p>
+            <p><strong>Contents:</strong> <span class="package-contents"></span></p>
             <p><strong>Warehouse ID:</strong> <span class="package-warehouse"></span></p>
             <p><strong>Updated At:</strong> <span class="package-updatedAt"></span></p>
             <hr/>
