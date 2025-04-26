@@ -86,3 +86,12 @@ func RedirectPackage(packageID string, coord *model.Coordinate) error {
 	}
 	return nil
 }
+
+// checks if a package is prioritized
+func IsPackagePrioritized(packageID string) (bool, error) {
+	return dao.IsPackagePrioritized(packageID)
+}
+
+func PrioritizePackage(packageID string) error {
+	return dao.PrioritizePackage(packageID)
+}

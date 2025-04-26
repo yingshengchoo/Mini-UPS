@@ -43,19 +43,33 @@ func NewPickupQueue(size uint) *PickupQueue {
 }
 
 // add new req
+// If req is labeled as a prioirty, put it in the priority.
 func (q *PickupQueue) AddRequest(req *PickupReq) {
-	// log.Println("here")
-	q.queue <- req
 	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	isPrioritized, err := service.IsPackagePrioritized(req.PackageID)
+
+	if err != nil {
+		log.Println("Failed to check if package is prioritized:", err)
+	} else if isPrioritized {
+		q.priorityQueue <- req
+	} else {
+		q.queue <- req
+	}
+
 	if !q.consuming {
 		q.consuming = true
 		go q.tryConsume()
 	}
-	q.mu.Unlock()
 }
 
+// Goes through the queue to check if the package is in the normal queue, if so,
+// move to prioritized queue
 func (q *PickupQueue) PrioritizePackage(packageID string) {
 	newQueue := make(chan *PickupReq, cap(q.queue))
+
+	service.PrioritizePackage(packageID)
 
 	for {
 		select {
@@ -137,4 +151,10 @@ func (q *PickupQueue) Pickup(req *PickupReq, truckID model.TruckID) {
 	if err != nil {
 		log.Println("Error sending GoPickUp command:", err)
 	}
+}
+
+// helper function to print out the lengths of the queues for debugging.
+func (q *PickupQueue) PrintLengths() {
+	log.Print(len(q.queue))
+	log.Print(len(q.priorityQueue))
 }

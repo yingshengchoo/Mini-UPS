@@ -85,3 +85,19 @@ func GetWareHouseIDByPackage(packageID string) (uint, error) {
 	}
 	return warehouseID, nil
 }
+
+func IsPackagePrioritized(packageID string) (bool, error) {
+	var pack model.Package
+	if err := db.DB.
+		Where("id = ?", packageID).
+		First(&pack).Error; err != nil {
+		return false, err
+	}
+	return pack.IsPrioritized, nil
+}
+
+func PrioritizePackage(packageID string) error {
+	return db.DB.Model(&model.Package{}).
+		Where("id = ?", packageID).
+		Update("IsPrioritized", true).Error
+}

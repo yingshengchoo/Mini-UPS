@@ -7,5 +7,5 @@ critical deliveries to be processed and delivered faster. We also implemented a 
 enabling users to easily share package information with others by simply providing them with the link.
 可以說一下 cookies?
 BUG:
-登不出去... 可能跟cookie 有關,  很相似:登入後 compose down + compose up 一樣會在logged in state
+登不出去... 可能跟cookie 有關,  很相似:登入後 compose down + compose up 一樣會在logged in state/ 就算直接到 .../login/login.html 登入別的用戶也沒用
 copy link --> 新的有覽器 會顯示Your packages 在沒有登入的情況

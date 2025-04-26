@@ -7,16 +7,17 @@ import (
 )
 
 type Package struct {
-	ID          PackageID      `gorm:"primaryKey" json:"package_id"`
-	Username    string         `gorm:"not null" json:"username"`
-	User        User           `gorm:"foreignKey:Username;references:Username"`
-	TruckID     *TruckID       `json:"truck_id"` // nullable
-	Truck       *Truck         `gorm:"foreignKey:TruckID"`
-	Items       datatypes.JSON `json:"items"`
-	Destination Coordinate     `gorm:"not null;embedded" json:"coord"`
-	WarehouseID uint           `gorm:"not null" json:"warehouse_id"`
-	Status      PackageStatus  `gorm:"type:varchar(20)" json:"status"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	ID            PackageID      `gorm:"primaryKey" json:"package_id"`
+	Username      string         `gorm:"not null" json:"username"`
+	User          User           `gorm:"foreignKey:Username;references:Username"`
+	TruckID       *TruckID       `json:"truck_id"` // nullable
+	Truck         *Truck         `gorm:"foreignKey:TruckID"`
+	Items         datatypes.JSON `json:"items"`
+	Destination   Coordinate     `gorm:"not null;embedded" json:"coord"`
+	WarehouseID   uint           `gorm:"not null" json:"warehouse_id"`
+	Status        PackageStatus  `gorm:"type:varchar(20)" json:"status"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	IsPrioritized bool           `gorm:"default:false" json:"is_prioritized"`
 }
 
 type PackageID string

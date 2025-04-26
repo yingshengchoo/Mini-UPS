@@ -160,7 +160,9 @@ func GetShareInfo(c *gin.Context) {
 	c.HTML(http.StatusOK, "home.html", gin.H{"packageID": packageID})
 }
 
+// prioritizes Pacakge
 func PrioritizePackage(c *gin.Context) {
 	packageID := c.Param("packageID")
 	queue.PkQueue.PrioritizePackage(packageID)
+	queue.PkQueue.PrintLengths()
 }

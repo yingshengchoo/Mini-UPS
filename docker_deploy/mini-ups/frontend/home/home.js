@@ -49,6 +49,7 @@ async function track(packageID) {
     clone.querySelector('.package-status').textContent = pkg.status;
     clone.querySelector('.package-warehouse').textContent = pkg.warehouse_id; //maybe not display?
     clone.querySelector('.package-updatedAt').textContent = `${formatDate(pkg.updated_at)}`;
+    clone.querySelector('.package-priority').textContent = pkg.is_prioritized;
 
 
     const progressBar = clone.querySelector(".fancy-progress-bar");
@@ -182,6 +183,7 @@ async function getPackageInfo() {
       clone.querySelector('.package-status').textContent = pkg.status;
       clone.querySelector('.package-warehouse').textContent = pkg.warehouse_id; //maybe not display?
       clone.querySelector('.package-updatedAt').textContent = `${formatDate(pkg.updated_at)}`;
+      clone.querySelector('.package-priority').textContent = pkg.is_prioritized;
 
 
       const progressBar = clone.querySelector(".fancy-progress-bar");
@@ -330,4 +332,5 @@ async function prioritizePackage(button) {
   console.log("Removing button:", button);
   button.remove();
   if (!res.ok) throw new Error('Fail to prioritize package');
+  location.reload();
 }
