@@ -117,7 +117,7 @@ async function getUserInfo() {
 
       // logined, show info
       const status = document.getElementById("login-status")
-      status.innerText = "Logined as: "+data.username;
+      status.innerText = "Logged in as: "+data.username;
       status.style.display = 'block'
       document.getElementById("btn-logout").style.display = "block"
 
@@ -325,7 +325,9 @@ async function prioritizePackage(button) {
   const res = await fetch(`/api/package/prioritize/${packageID}`, {
     method: "POST",
     credentials: "include",
-  })
+  });
 
-  if (!res.ok) throw new Error('Fail to logout');
+  console.log("Removing button:", button);
+  button.remove();
+  if (!res.ok) throw new Error('Fail to prioritize package');
 }

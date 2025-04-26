@@ -6,3 +6,6 @@ without requiring user intervention. Additionally, users can prioritize importan
 critical deliveries to be processed and delivered faster. We also implemented a shareable tracking link,
 enabling users to easily share package information with others by simply providing them with the link.
 可以說一下 cookies?
+BUG:
+登不出去... 可能跟cookie 有關,  很相似:登入後 compose down + compose up 一樣會在logged in state
+copy link --> 新的有覽器 會顯示Your packages 在沒有登入的情況
