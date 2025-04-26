@@ -10,6 +10,8 @@ import (
 
 type Config struct {
 	Postgres PostgresConfig `yaml:"postgres"`
+	Amazon   AmazonConfig   `yaml:"amazon"`
+	Ups      UpsConfig      `yaml:"ups"`
 }
 
 type PostgresConfig struct {
@@ -18,6 +20,16 @@ type PostgresConfig struct {
 	User     string `yaml:"username"`
 	Password string `yaml:"password"`
 	DBName   string `yaml:"dbname"`
+}
+
+type AmazonConfig struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
+}
+
+type UpsConfig struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 var AppConfig *Config

@@ -4,3 +4,11 @@ postgres:
   username: postgres
   password: postgres
   dbname: miniups
+
+amazon:
+  host: vcm-46875.vm.duke.edu
+  port: 8080
+
+ups:
+  host: vcm-46755.vm.duke.edu
+  port: 8080
