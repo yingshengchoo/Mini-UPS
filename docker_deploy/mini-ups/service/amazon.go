@@ -18,7 +18,7 @@ import (
 //UPDATE HERE: Make sure to move the listening to response from Service UPS to here!
 //We send Amazon POST request -> We listen to their response
 
-var amazonURL = config.AppConfig.Amazon.Host + ":" + strconv.Itoa(config.AppConfig.Amazon.Port) + "/api/ups/"
+var amazonURL = "http://" + config.AppConfig.Amazon.Host + ":" + strconv.Itoa(config.AppConfig.Amazon.Port) + "/api/ups/"
 
 // Send Request to Amazon, notifying that the Delivery was complete
 func NotifyAmazonDeliveryComplete(packageID string, truckID, x, y int) error {
