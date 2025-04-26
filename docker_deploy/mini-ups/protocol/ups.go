@@ -2,7 +2,9 @@ package protocol
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"time"
 
 	"mini-ups/protocol/worldupspb"
 	"mini-ups/util"
@@ -46,9 +48,20 @@ func ConnectUPSWithWorldID(worldID int64, trucks []*worldupspb.UInitTruck) net.C
 }
 
 func ConnectUPS(trucks []*worldupspb.UInitTruck) (net.Conn, int64) {
-	conn, err := net.Dial("tcp", util.WORLD_HOST+":12345")
-	if err != nil {
-		panic(err)
+
+	ticker := time.NewTicker(1 * time.Second) // try connect once per second
+	defer ticker.Stop()                       // stop ticker
+	var conn net.Conn
+	var err error
+
+	// try to conenct every second until success
+	for range ticker.C { // wait for ticker
+		conn, err = net.Dial("tcp", util.WORLD_HOST+":12345")
+		if err != nil {
+			log.Println(err)
+		} else {
+			break
+		}
 	}
 	fmt.Println("Sending UConnect...")
 

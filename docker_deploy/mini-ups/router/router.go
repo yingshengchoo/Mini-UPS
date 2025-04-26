@@ -1,9 +1,13 @@
 package router
 
 import (
+	"crypto/sha256"
+	"fmt"
+	"math/rand"
 	"mini-ups/controller"
 	"mini-ups/util"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -15,13 +19,14 @@ func InitRouter() *gin.Engine {
 
 	store := cookie.NewStore([]byte("mini-ups-secret"))
 
-	router.Use(sessions.Sessions("mini-ups-session", store))
+	// router.Use(sessions.Sessions("mini-ups-session", store))
+	router.Use(sessions.Sessions(generateSessionKey(), store))
 	store.Options(sessions.Options{
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   false, // 如果没有启用 HTTPS，可以设置为 false
 		SameSite: http.SameSiteLaxMode,
-		Domain:   "vcm-46755.vm.duke.edu",
+		Domain:   util.UPS_HOST,
 	})
 
 	// router.Use(cors.New(cors.Config{
@@ -93,4 +98,27 @@ func InitRouter() *gin.Engine {
 		}
 	}
 	return router
+}
+
+func generateSessionKey() string {
+	// get now time
+	currentTime := time.Now().Unix()
+
+	// generate current time
+	randomSource := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomBytes := make([]byte, 16)
+	_, err := randomSource.Read(randomBytes)
+	if err != nil {
+		panic("Failed to generate random data: " + err.Error())
+	}
+
+	// conta time and randombytes
+	data := fmt.Sprintf("%d%s", currentTime, randomBytes)
+
+	// encryt it
+	hash := sha256.New()
+	hash.Write([]byte(data))
+	sessionKey := fmt.Sprintf("%x", hash.Sum(nil))
+
+	return sessionKey
 }
