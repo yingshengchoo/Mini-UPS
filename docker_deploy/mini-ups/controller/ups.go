@@ -297,7 +297,7 @@ func LoadedPackage(c *gin.Context) {
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"action":         "package_loaded_response", // 不知道這裡是不是該這樣寫
+			"action":         "delivery_started", // 不知道這裡是不是該這樣寫
 			"message_id":     uuid.New().String(),
 			"in_response_to": req.MessageID,
 			"status":         "error",
@@ -348,7 +348,7 @@ func Deliver(c *gin.Context) {
 	}
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"action":         "package_loaded_response",
+			"action":         "delivery_started",
 			"message_id":     uuid.New().String(),
 			"in_response_to": req.MessageID,
 			"status":         "error",
@@ -369,7 +369,7 @@ func Deliver(c *gin.Context) {
 	err = service.ChangePackageStatus(req.PackageID, model.PackageStatus(model.StatusOutForDelivery))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"action":         "package_loaded_response",
+			"action":         "delivery_started",
 			"message_id":     uuid.New().String(),
 			"in_response_to": req.MessageID,
 			"status":         "error",
@@ -379,7 +379,7 @@ func Deliver(c *gin.Context) {
 	}
 
 	resp := gin.H{
-		"action":         "package_loaded_response",
+		"action":         "delivery_started",
 		"message_id":     uuid.New().String(),
 		"in_response_to": req.MessageID,
 		"status":         "success",

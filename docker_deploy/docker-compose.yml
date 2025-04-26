@@ -52,7 +52,7 @@ services:
     environment:
       - DB_HOST=upsdb
       - WORLD_HOST=server
-      - UPS_HOST=vcm-47478.vm.duke.edu
+      - UPS_HOST=vcm-46755.vm.duke.edu
     networks:
       - mynetwork
     depends_on:

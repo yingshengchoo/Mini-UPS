@@ -17,7 +17,7 @@ import (
 //We send Amazon POST request -> We listen to their response
 
 // const amazonURL = "http://localhost:8000/api/amazon" //是這個ＵＲＬ嗎
-const amazonURL = "http://vcm-46910.vm.duke.edu:8002/api/ups/"
+const amazonURL = "http://vcm-46910.vm.duke.edu:8000/api/ups/"
 
 // Send Request to Amazon, notifying that the Delivery was complete
 func NotifyAmazonDeliveryComplete(packageID string, truckID, x, y int) error {
