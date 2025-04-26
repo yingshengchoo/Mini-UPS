@@ -177,6 +177,10 @@ async function getPackageInfo() {
         btn.disabled = true;
         btn2.disabled = true;
       }
+
+      if (pkg.is_prioritized) {
+        btn2.remove();
+      }
       clone.querySelector('.package-id').textContent = pkg.package_id;
       clone.querySelector('.package-contents').textContent = `${formatItems(pkg.items)}`;
       clone.querySelector('.package-address').textContent = `(${pkg.coord.x}, ${pkg.coord.y})`;
