@@ -13,7 +13,7 @@ async function track(packageID) {
     const res = await fetch(`/api/package/info/${trackingNumber}`);
     if (!res.ok) {
       document.getElementById('track-package').style.display = "none";
-      throw new Error('Fail to track');
+      throw new Error('Package Not Found. Please make sure you enter the correct packageID.');
     }
 
     const data = await res.json();
@@ -174,8 +174,8 @@ async function getPackageInfo() {
       const btn = clone.querySelector('.redirect-btn')
       const btn2 = clone.querySelector(".prioritize-btn");
       if (pkg.status === 'out_for_delivery' || pkg.status === 'delivered') {
-        btn.disabled = true;
-        btn2.disabled = true;
+        btn.disabled = remove();
+        btn2.disabled = remove();
       }
 
       if (pkg.is_prioritized) {
