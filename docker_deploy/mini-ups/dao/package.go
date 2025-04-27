@@ -42,6 +42,16 @@ func GetPackageInfoByTruckID(truckID int32) (*model.Package, error) {
 	return &pack, nil
 }
 
+func GetPickingPackageInfoByTruckID(truckID int32) (*model.Package, error) {
+	var pack model.Package
+	if err := db.DB.
+		Where("truck_id = ? and status = ?", model.TruckID(truckID), model.Status("created")).
+		First(&pack).Error; err != nil {
+		return nil, err
+	}
+	return &pack, nil
+}
+
 // Updates the delivery address to newCoord of the package with packageID
 func UpdateDeliveryAddress(packageID string, newCoord model.Coordinate) (int64, error) {
 	result := db.DB.Model(&model.Package{}).
