@@ -174,8 +174,8 @@ async function getPackageInfo() {
       const btn = clone.querySelector('.redirect-btn')
       const btn2 = clone.querySelector(".prioritize-btn");
       if (pkg.status === 'out_for_delivery' || pkg.status === 'delivered') {
-        btn.disabled = remove();
-        btn2.disabled = remove();
+        btn.remove();
+        btn2.remove();
       }
 
       if (pkg.is_prioritized) {
