@@ -1,0 +1,194 @@
+package main
+
+import (
+	"bufio"
+	"encoding/binary"
+	"fmt"
+	"net"
+	"os"
+	"strconv"
+	"strings"
+
+	"mini-ups/protocol/worldamazonpb"
+
+	"google.golang.org/protobuf/proto"
+)
+
+func sendMsg(conn net.Conn, msg proto.Message) error {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	var lenBuf [binary.MaxVarintLen32]byte
+	n := binary.PutUvarint(lenBuf[:], uint64(len(data)))
+
+	if _, err := conn.Write(lenBuf[:n]); err != nil {
+		return err
+	}
+	if _, err := conn.Write(data); err != nil {
+		return err
+	}
+
+	fmt.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
+	return nil
+}
+
+func recvMsg(conn net.Conn, msg proto.Message) error {
+	var size uint64
+	var err error
+	var sizeBuf [1]byte
+	var shift uint
+
+	for {
+		_, err = conn.Read(sizeBuf[:])
+		if err != nil {
+			return err
+		}
+		b := sizeBuf[0]
+		size |= uint64(b&0x7F) << shift
+		if b < 0x80 {
+			break
+		}
+		shift += 7
+		if shift >= 64 {
+			return fmt.Errorf("recvMsg: varint size too long")
+		}
+	}
+
+	data := make([]byte, size)
+	total := 0
+	for total < int(size) {
+		n, err := conn.Read(data[total:])
+		if err != nil {
+			return err
+		}
+		total += n
+	}
+
+	return proto.Unmarshal(data, msg)
+}
+
+func connectAmazon() (net.Conn, int64) {
+	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:23456")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Sending AConnect...")
+
+	aconnect := &worldamazonpb.AConnect{
+		IsAmazon: proto.Bool(true),
+		Initwh: []*worldamazonpb.AInitWarehouse{{
+			Id: proto.Int32(1),
+			X:  proto.Int32(10),
+			Y:  proto.Int32(20),
+		}},
+	}
+	if err := sendMsg(conn, aconnect); err != nil {
+		panic(err)
+	}
+
+	resp := &worldamazonpb.AConnected{}
+	if err := recvMsg(conn, resp); err != nil {
+		panic(err)
+	}
+	fmt.Println("Connected to World, WorldID:", resp.GetWorldid())
+	return conn, resp.GetWorldid()
+}
+
+func main() {
+	conn, _ := connectAmazon()
+	defer conn.Close()
+
+	reader := bufio.NewReader(os.Stdin)
+	seqnum := int64(1)
+
+	for {
+		fmt.Println("\nChoose Amazon action:")
+		fmt.Println("1. PurchaseMore")
+		fmt.Println("2. Pack")
+		fmt.Println("3. PutOnTruck")
+		fmt.Println("4. Disconnect")
+		fmt.Print("Enter your choice: ")
+
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+
+		switch input {
+		case "1":
+			fmt.Print("Enter warehouse ID: ")
+			whid, _ := strconv.Atoi(readLine(reader))
+			fmt.Print("Enter product ID: ")
+			prodID, _ := strconv.ParseInt(readLine(reader), 10, 64)
+			fmt.Print("Enter description: ")
+			desc := readLine(reader)
+			fmt.Print("Enter count: ")
+			count, _ := strconv.Atoi(readLine(reader))
+
+			cmd := &worldamazonpb.ACommands{
+				Buy: []*worldamazonpb.APurchaseMore{{
+					Whnum:  proto.Int32(int32(whid)),
+					Seqnum: proto.Int64(seqnum),
+					Things: []*worldamazonpb.AProduct{{
+						Id:          proto.Int64(prodID),
+						Description: proto.String(desc),
+						Count:       proto.Int32(int32(count)),
+					}},
+				}},
+			}
+			sendMsg(conn, cmd)
+
+		case "2":
+			fmt.Print("Enter warehouse ID: ")
+			whid, _ := strconv.Atoi(readLine(reader))
+			fmt.Print("Enter ship ID: ")
+			shipid, _ := strconv.ParseInt(readLine(reader), 10, 64)
+
+			cmd := &worldamazonpb.ACommands{
+				Topack: []*worldamazonpb.APack{{
+					Whnum:  proto.Int32(int32(whid)),
+					Shipid: proto.Int64(shipid),
+					Seqnum: proto.Int64(seqnum),
+					Things: []*worldamazonpb.AProduct{}, // Optional
+				}},
+			}
+			sendMsg(conn, cmd)
+
+		case "3":
+			fmt.Print("Enter warehouse ID: ")
+			whid, _ := strconv.Atoi(readLine(reader))
+			fmt.Print("Enter truck ID: ")
+			truckid, _ := strconv.Atoi(readLine(reader))
+			fmt.Print("Enter ship ID: ")
+			shipid, _ := strconv.ParseInt(readLine(reader), 10, 64)
+
+			cmd := &worldamazonpb.ACommands{
+				Load: []*worldamazonpb.APutOnTruck{{
+					Whnum:   proto.Int32(int32(whid)),
+					Truckid: proto.Int32(int32(truckid)),
+					Shipid:  proto.Int64(shipid),
+					Seqnum:  proto.Int64(seqnum),
+				}},
+			}
+			sendMsg(conn, cmd)
+
+		case "4":
+			cmd := &worldamazonpb.ACommands{
+				Disconnect: proto.Bool(true),
+			}
+			sendMsg(conn, cmd)
+			fmt.Println("Disconnect sent.")
+			return
+
+		default:
+			fmt.Println("Invalid option.")
+		}
+
+		seqnum++
+	}
+}
+
+func readLine(reader *bufio.Reader) string {
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
+}

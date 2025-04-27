@@ -54,7 +54,7 @@ message UErr{
 }
 
 message UQuery{
-  required int32 truckid =1; 
+  required int32 truckid =1;
   required int64 seqnum = 2;
 }
 

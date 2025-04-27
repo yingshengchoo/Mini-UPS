@@ -1,0 +1,335 @@
+package main
+
+import (
+	"encoding/binary"
+	"fmt"
+	"net"
+	"time"
+
+	"mini-ups/protocol/worldamazonpb"
+	"mini-ups/protocol/worldupspb"
+
+	"google.golang.org/protobuf/proto"
+)
+
+// Serialize and send protobuf message
+func sendMsg(conn net.Conn, msg proto.Message) error {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	// Varint encode the length
+	var lenBuf [binary.MaxVarintLen32]byte
+	n := binary.PutUvarint(lenBuf[:], uint64(len(data)))
+
+	// Send length followed by data
+	if _, err := conn.Write(lenBuf[:n]); err != nil {
+		return err
+	}
+	if _, err := conn.Write(data); err != nil {
+		return err
+	}
+
+	fmt.Printf("Sent %d bytes header + %d bytes data\n", n, len(data))
+	return nil
+}
+
+func recvMsg(conn net.Conn, msg proto.Message) error {
+	// Read varint length prefix
+	var size uint64
+	var err error
+	var sizeBuf [1]byte
+	var shift uint
+
+	for {
+		_, err = conn.Read(sizeBuf[:])
+		if err != nil {
+			return err
+		}
+		b := sizeBuf[0]
+		size |= uint64(b&0x7F) << shift
+		if b < 0x80 {
+			break
+		}
+		shift += 7
+		if shift >= 64 {
+			return fmt.Errorf("recvMsg: varint size too long")
+		}
+	}
+
+	// Read full message of decoded size
+	data := make([]byte, size)
+	total := 0
+	for total < int(size) {
+		n, err := conn.Read(data[total:])
+		if err != nil {
+			return err
+		}
+		total += n
+	}
+
+	return proto.Unmarshal(data, msg)
+}
+
+func connectAmazon() (net.Conn, int64) {
+	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:23456")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Sending AConnect...")
+
+	aconnect := &worldamazonpb.AConnect{
+		IsAmazon: proto.Bool(true),
+		Initwh: []*worldamazonpb.AInitWarehouse{{
+			Id: proto.Int32(1),
+			X:  proto.Int32(10),
+			Y:  proto.Int32(20),
+		}},
+	}
+	fmt.Printf("AConnect before marshal: %+v\n", aconnect)
+	raw, _ := proto.Marshal(aconnect)
+	fmt.Println("Serialized AConnect length:", len(raw))
+
+	if err := sendMsg(conn, aconnect); err != nil {
+		panic(err)
+	}
+
+	resp := &worldamazonpb.AConnected{}
+	if err := recvMsg(conn, resp); err != nil {
+		panic(err)
+	}
+	fmt.Println("AConnected:", resp)
+	return conn, resp.GetWorldid()
+}
+
+func connectUPS(worldID int64) net.Conn {
+	conn, err := net.Dial("tcp", "vcm-47478.vm.duke.edu:12345")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Sending UConnect...")
+
+	uconnect := &worldupspb.UConnect{
+		IsAmazon: proto.Bool(false),
+		Worldid:  proto.Int64(worldID),
+		Trucks: []*worldupspb.UInitTruck{{
+			Id: proto.Int32(1),
+			X:  proto.Int32(0),
+			Y:  proto.Int32(0),
+		}},
+	}
+	if err := sendMsg(conn, uconnect); err != nil {
+		panic(err)
+	}
+
+	resp := &worldupspb.UConnected{}
+	if err := recvMsg(conn, resp); err != nil {
+		panic(err)
+	}
+	fmt.Println("UConnected:", resp)
+	return conn
+}
+
+func simulateAmazonFlow(conn net.Conn, seqStart int32) {
+	cmd := &worldamazonpb.ACommands{
+		Buy: []*worldamazonpb.APurchaseMore{{
+			Whnum:  proto.Int32(1),
+			Seqnum: proto.Int64(int64(seqStart)),
+			Things: []*worldamazonpb.AProduct{{
+				Id:          proto.Int64(1001),
+				Description: proto.String("Test Product"),
+				Count:       proto.Int32(2),
+			}},
+		}},
+		Topack: []*worldamazonpb.APack{{
+			Whnum:  proto.Int32(1),
+			Shipid: proto.Int64(999),
+			Seqnum: proto.Int64(int64(seqStart + 1)),
+			Things: []*worldamazonpb.AProduct{{
+				Id:          proto.Int64(1001),
+				Description: proto.String("Test Product"),
+				Count:       proto.Int32(2),
+			}},
+		}},
+	}
+	sendMsg(conn, cmd)
+	fmt.Println("Sent APurchaseMore and APack")
+
+	for {
+		resp := &worldamazonpb.AResponses{}
+		if err := recvMsg(conn, resp); err != nil {
+			fmt.Println("Amazon socket closed unexpectedly.")
+			return
+		}
+		fmt.Println("Amazon received AResponses:", resp)
+
+		for _, r := range resp.GetReady() {
+			if r.GetShipid() == 999 {
+				fmt.Println("Package packed and ready:", r)
+				return
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func simulateUPSPickup(conn net.Conn, seqnum int64) {
+	cmd := &worldupspb.UCommands{
+		Pickups: []*worldupspb.UGoPickup{{
+			Truckid: proto.Int32(1),
+			Whid:    proto.Int32(1),
+			Seqnum:  proto.Int64(seqnum),
+		}},
+		Deliveries: []*worldupspb.UGoDeliver{},
+	}
+	sendMsg(conn, cmd)
+	fmt.Println("Sent UGoPickup")
+
+	for {
+		resp := &worldupspb.UResponses{}
+		if err := recvMsg(conn, resp); err != nil {
+			fmt.Println("UPS socket closed unexpectedly.")
+			return
+		}
+		fmt.Println("UPS received UResponses:", resp)
+
+		for _, done := range resp.GetCompletions() {
+			if done.GetStatus() == "ARRIVE WAREHOUSE" {
+				fmt.Println("Truck arrived:", done)
+				return
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func simulateAmazonLoadAndPut(conn net.Conn, seqnum int64) {
+	cmd := &worldamazonpb.ACommands{
+		Load: []*worldamazonpb.APutOnTruck{{
+			Whnum:   proto.Int32(1),
+			Truckid: proto.Int32(1),
+			Shipid:  proto.Int64(999),
+			Seqnum:  proto.Int64(seqnum),
+		}},
+	}
+	sendMsg(conn, cmd)
+	fmt.Println("Sent APutOnTruck")
+
+	for {
+		resp := &worldamazonpb.AResponses{}
+		if err := recvMsg(conn, resp); err != nil {
+			fmt.Println("Amazon socket closed unexpectedly.")
+			return
+		}
+		fmt.Println("Amazon received AResponses:", resp)
+
+		for _, loaded := range resp.GetLoaded() {
+			if loaded.GetShipid() == 999 {
+				fmt.Println("Package loaded on truck:", loaded)
+				return
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func simulateUPSDeliver(conn net.Conn, seqnum int64) {
+	cmd := &worldupspb.UCommands{
+		Deliveries: []*worldupspb.UGoDeliver{{
+			Truckid: proto.Int32(1),
+			Seqnum:  proto.Int64(seqnum),
+			Packages: []*worldupspb.UDeliveryLocation{{
+				Packageid: proto.Int64(999),
+				X:         proto.Int32(15),
+				Y:         proto.Int32(25),
+			}},
+		}},
+	}
+	sendMsg(conn, cmd)
+	fmt.Println("Sent UGoDeliver")
+
+	for {
+		resp := &worldupspb.UResponses{}
+		if err := recvMsg(conn, resp); err != nil {
+			fmt.Println("UPS socket closed unexpectedly.")
+			return
+		}
+		fmt.Println("UPS received UResponses:", resp)
+
+		for _, delivered := range resp.GetDelivered() {
+			if delivered.GetPackageid() == 999 {
+				fmt.Println("Package Delivered:", delivered)
+				return
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func simulateAmazonDisconnect(conn net.Conn) {
+	cmd := &worldamazonpb.ACommands{
+		Disconnect: proto.Bool(true),
+	}
+	sendMsg(conn, cmd)
+	fmt.Println("Sent Amazon disconnect")
+
+	for {
+		resp := &worldamazonpb.AResponses{}
+		if err := recvMsg(conn, resp); err != nil {
+			fmt.Println("Amazon socket closed unexpectedly.")
+			return
+		}
+		fmt.Println("Amazon received AResponses:", resp)
+
+		if resp.GetFinished() {
+			fmt.Println("Amazon disconnected gracefully.")
+			return
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+func simulateUPSDisconnect(conn net.Conn) {
+	cmd := &worldupspb.UCommands{
+		Disconnect: proto.Bool(true),
+	}
+	sendMsg(conn, cmd)
+	fmt.Println("Sent UPS disconnect")
+
+	for {
+		resp := &worldupspb.UResponses{}
+		if err := recvMsg(conn, resp); err != nil {
+			fmt.Println("UPS socket closed unexpectedly.")
+			return
+		}
+		fmt.Println("UPS received UResponses:", resp)
+
+		if resp.GetFinished() {
+			fmt.Println("UPS disconnected gracefully.")
+			return
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+}
+
+// The rest of simulate steps can be done similarly
+// simulateUPSPickup, simulateAmazonLoadAndPut, simulateUPSDeliver
+// simulateAmazonDisconnect, simulateUPSDisconnect
+
+func main() {
+	fmt.Println("Full simulation beginning...")
+	amazonConn, worldID := connectAmazon()
+	upsConn := connectUPS(worldID)
+
+	simulateAmazonFlow(amazonConn, 1)
+	simulateUPSPickup(upsConn, 1)
+	simulateAmazonLoadAndPut(amazonConn, 3)
+	simulateUPSDeliver(upsConn, 2)
+	simulateAmazonDisconnect(amazonConn)
+	simulateUPSDisconnect(upsConn)
+
+	amazonConn.Close()
+	upsConn.Close()
+	fmt.Println("Simulation complete")
+}

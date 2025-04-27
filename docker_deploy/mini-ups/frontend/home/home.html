@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UPS track system</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/home/package.css" />
+  <link rel="stylesheet" href="/static/home/redirect.css" />
+</head>
+<body>
+  <header>
+    mini-UPS track system
+  </header>
+  <main>
+    <div class="card">
+      <h2>Package tracking</h2>
+      <input type="text" id="trackingNumber" placeholder="Enter package ID..." />
+      <button onclick="track(null)">Track</button>
+      <div class="result" id="result" style="display: none;"></div>
+      <p id="track-package"  style="display: none;">
+        <!-- place for package info card -->
+      </p>
+    </div>
+    <div class="card">
+        <!-- show user info -->
+        <h2>Track your own</h2>
+        <button id="btn-login" onclick="window.location.href='/login/login.html'">Login</button>
+        <button id="btn-register" onclick="window.location.href='/register/register.html'">Register</button>
+        <div class="result" id="login-status" style="display: none;"></div>
+        <button id="btn-logout" onclick="logout()" style="display: none;">Log out</button>
+
+        <!-- show package info -->
+        <h3 id="package-title" style="display: none;">Your packages</h3>
+        <div id="user-packages"  style="display: none;">
+          <div class="package-item" id="package-template" style="display: none;">
+
+            <div style="float: right; text-align: right;">
+              <button class="redirect-btn">Redirect</button>
+              <button class="prioritize-btn" onclick="prioritizePackage(this)">Prioritize Package</button>
+              <button onclick="copyLink(this)">Copy link</button>
+              <span class="copy-status" style="color: green; font-size: 12px; display: none;">Copyed!</span>
+            </div>
+            <p><strong>package ID:</strong> <span class="package-id"></span></p>
+            <p><strong>Delivery Address:</strong> <span class="package-address"></span></p>
+            <p><strong>Status:</strong> <span class="package-status"></span></p>
+            <p><strong>Contents:</strong> <span class="package-contents"></span></p>
+            <p><strong>Warehouse ID:</strong> <span class="package-warehouse"></span></p>
+            <p><strong>Updated At:</strong> <span class="package-updatedAt"></span></p>
+            <p><strong>Prioritized:</strong> <span class="package-priority"></span></p>
+            <hr/>
+            <div class="fancy-progress-bar" style="display: none;">
+              <ul class="progress-steps">
+                <li class="step">Created</li>
+                <li class="step">Arrived</li>
+                <li class="step">Loaded</li>
+                <li class="step">Delivering</li>
+                <li class="step">Delivered</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+    </div>
+  </main>
+
+  <script src="/home/home.js"></script>
+  <script src="/home/redirect.js"></script>
+  <script>
+    var packageID = "{{.packageID}}";
+
+// 检查数据是否有效
+if (/^\d+$/.test(packageID)) {
+    // 如果数据有效，更新页面
+    console.log(" package ID :",packageID);
+    track(packageID)
+} else {
+    console.log("No package ID found.");
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!-- modal.html -->
+<div id="custom-modal" style="
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.25);">
+  <h3>Redirect Package <span id="modal-package-id"></span></h3>
+  <label>X:</label> <input type="number" id="x-coord"><br><br>
+  <label>Y:</label> <input type="number" id="y-coord"><br><br>
+  <button onclick="submitRedirect()">Submit</button>
+</div>
+<script src="redirect.js"></script>

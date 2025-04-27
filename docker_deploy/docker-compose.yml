@@ -6,30 +6,59 @@ services:
       POSTGRES_PASSWORD: abc123
       POSTGRES_USER: postgres
       POSTGRES_DB: worldSim
+    ports:
+      - "8888:5432"
+    networks:
+      - mynetwork
     restart: always
+
   server:
     build: ./world/
     command: bash -c "./wait-for-it.sh mydb:5432 --strict -- ./server 12345 23456 0"
     ports:
       - "12345:12345"
       - "23456:23456"
+    networks:
+      - mynetwork
     depends_on:
       - mydb
 
-  web:
-    build: .
-    command: gunicorn myproject.wsgi:application --bind 0.0.0.0:8000
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
+  upsdb:
+    image: postgres:15-alpine
     environment:
-      - DEBUG=False
-      - DJANGO_SECRET_KEY=your-secret-key
-    depends_on:
-      - db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=miniups
+    # volumes:
+    #   - postgres_data:/var/lib/postgresql/data
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "7777:5432"  # expose port
     networks:
       - mynetwork
+    healthcheck:  # health check
+      test: ["CMD-SHELL", "pg_isready -U postgres -d miniups"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  miniups:
+    build: ./mini-ups/
+    ports:
+      - "8080:8080"
+    # volumes:
+    #   - ./mini-ups:/app
+    # working_dir: /app
+    environment:
+      - DB_HOST=upsdb
+      - WORLD_HOST=server
+      # - UPS_HOST=vcm-47478.vm.duke.edu
+    networks:
+      - mynetwork
+    depends_on:
+      upsdb:
+        condition: service_healthy
+    # command: air
 
 
 networks:

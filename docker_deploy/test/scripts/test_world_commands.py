@@ -30,9 +30,10 @@ from io import BytesIO
 #
 # Aside from the commands above : A/UQuery (UPS returns UTruck, Amazon returns APackage)
 # Aside from the responses above: A/UErr, APackage, UTruck
-HOST = 'vcm-46946.vm.duke.edu'
-PORT = 12345
-
+HOST = 'vcm-46755.vm.duke.edu'
+# HOST = 'vcm-47478.vm.duke.edu'
+UPS_PORT = 12345
+AMAZON_PORT = 23456
 def send_msg(sock, msg):
     data = msg.SerializeToString()
     out = BytesIO()
@@ -64,10 +65,12 @@ def recv_msg(sock, message_type):
 
 
 def connect_amazon():
-    sock = socket.create_connection(("vcm-46946.vm.duke.edu", 23456))
+    sock = socket.create_connection((HOST, AMAZON_PORT))
     print("Sending AConnect...")
     aconnect = amazon_pb2.AConnect()
     aconnect.isAmazon = True
+
+    aconnect.worldid = 1
     wh = aconnect.initwh.add()
     wh.id = 1
     wh.x = 10
@@ -76,11 +79,11 @@ def connect_amazon():
     send_msg(sock, aconnect)
     response = recv_msg(sock, amazon_pb2.AConnected)
     print("AConnected:", response)
-    return sock, response.worldid
+    return sock
 
 
 def connect_ups(worldid):
-    sock = socket.create_connection(("vcm-46946.vm.duke.edu", 12345))
+    sock = socket.create_connection((HOST, UPS_PORT))
     print("Sending UConnect...")
     uconnect = world_ups_1_pb2.UConnect()
     uconnect.isAmazon = False
@@ -158,7 +161,6 @@ def simulate_ups_pickup(sock, seq_start=1):
         for completed in response.completions:
             if completed.status == "ARRIVE WAREHOUSE":
                 print("Package packed and ready:", completed)
-                return True
 
         time.sleep(0.5)
 
@@ -263,17 +265,20 @@ def simulate_ups_disconnect(sock):
 
 def main():
     print("Full simulation beginning...")
-    amazon_sock, worldid = connect_amazon()
-    ups_sock = connect_ups(worldid)
+    amazon_sock = connect_amazon()
+    # ups_sock = connect_ups(worldid)
 
-    simulate_amazon_flow(amazon_sock)
-    simulate_ups_pickup(ups_sock)
-    simulate_amazon_load_and_put(amazon_sock)
-    simulate_ups_deliver(ups_sock)
-    simulate_amazon_disconnect(amazon_sock)
-    simulate_ups_disconnect(ups_sock)
-    amazon_sock.close()
-    ups_sock.close()
+    # simulate_amazon_flow(amazon_sock)
+    # simulate_ups_pickup(ups_sock)
+    # simulate_amazon_load_and_put(amazon_sock)
+    # simulate_ups_deliver(ups_sock)
+    # simulate_amazon_disconnect(amazon_sock)
+    # simulate_ups_disconnect(ups_sock)
+    # amazon_sock.close()
+    # ups_sock.close()
+    while True :
+        pass
+
     print("Simulation complete")
 
 if __name__ == "__main__":
