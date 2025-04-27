@@ -1,11 +1,13 @@
 package model
 
+// Truck represents a shipping truck
 type Truck struct {
 	ID     TruckID    `gorm:"primaryKey" json:"id"`
 	Coord  Coordinate `gorm:"not null;embedded" json:"coord"`
 	Status Status     `gorm:"type:varchar(20)" json:"status"`
 }
 
+// Coordiante represents the location of an object.
 type Coordinate struct {
 	X int `json:"x"`
 	Y int `json:"y"`
@@ -31,7 +33,7 @@ var TruckStatus = struct {
 	DELIVERED:  "delivered",
 }
 
-// new a truck
+// NewTruck creates a new a truck
 func NewTruck(truckID TruckID, x int, y int, status Status) *Truck {
 	return &Truck{
 		ID:     truckID,

@@ -8,6 +8,8 @@ import (
 	"gorm.io/datatypes"
 )
 
+//This service file handles package querying and modification of packages.
+
 // Returns basic info of packages belonging to a user
 func GetPackagesForUser(username string) ([]model.Package, error) {
 	return dao.GetPackagesByUser(username)
@@ -92,6 +94,7 @@ func IsPackagePrioritized(packageID string) (bool, error) {
 	return dao.IsPackagePrioritized(packageID)
 }
 
+// Sets package of PackageID to be a prioritized package.
 func PrioritizePackage(packageID string) error {
 	return dao.PrioritizePackage(packageID)
 }

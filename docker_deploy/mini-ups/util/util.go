@@ -11,6 +11,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+//This file contains helper functions and global variables used throughout our UPS.
+
 var WORLD_HOST = config.GetEnvOrDefault("WORLD_HOST", "vcm-47478.vm.duke.edu:12345") // Changed based on HOST
 // var UPS_HOST = config.GetEnvOrDefault("UPS_HOST", "vcm-47478.vm.duke.edu:8080")      // Changed based on HOST
 var UPS_HOST = config.AppConfig.Ups.Host // Changed based on HOST
@@ -21,15 +23,17 @@ var seqnum int64
 
 var globalPackageID int64
 
+// Generates a unique packageID
 func GeneratePackageID() int64 {
 	return atomic.AddInt64(&globalPackageID, 1)
 }
 
+// Geneartea a unique Sequence number.
 func GenerateSeqNum() int64 {
 	return atomic.AddInt64(&seqnum, 1)
 }
 
-// reserved for future use
+// Sends message to the World simulation
 func SendMsg(conn net.Conn, msg proto.Message) error {
 	data, err := proto.Marshal(msg)
 	if err != nil {
@@ -52,6 +56,7 @@ func SendMsg(conn net.Conn, msg proto.Message) error {
 	return nil
 }
 
+// Recieves message from World
 func RecvMsg(conn net.Conn, msg proto.Message) error {
 	// Read varint length prefix
 	var size uint64
@@ -94,12 +99,14 @@ type Int64Set struct {
 	data map[int64]struct{}
 }
 
+// This is a set datastructure to hold INT64.
 func NewInt64Set() *Int64Set {
 	return &Int64Set{
 		data: make(map[int64]struct{}),
 	}
 }
 
+// Add adds a number to our set.
 func (s *Int64Set) Add(val int64) bool {
 	if _, exists := s.data[val]; exists {
 		return false

@@ -203,7 +203,7 @@ async function getPackageInfo() {
 }
 
 const dbStatusOrder = [
-  "created", "packed", "pickup_complete", "loaded", "out_for_delivery", "delivered"
+  "created", "pickup_complete", "loaded", "out_for_delivery", "delivered"
 ];
 
 

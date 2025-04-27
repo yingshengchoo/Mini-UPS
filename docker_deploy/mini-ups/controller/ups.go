@@ -24,6 +24,7 @@ var Controller *vnetcontroller.Controller
 //ERROR TYPES 文檔有specify 可能要檢查有沒有用對
 
 // POST /api/ups
+// ParseActions parse the requests sent from amazon. These requests must follow the format of the agreed upon Communication Protocol.
 func ParseAction(c *gin.Context) {
 
 	// json with action

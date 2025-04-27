@@ -12,6 +12,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+//These functions are help functions that constructs commands to communicate with the world simulator.
+
 // createTruck constructs a UInitTruck given ID, x, and y coordinates
 func CreateTruck(id, x, y int32) *worldupspb.UInitTruck {
 	return &worldupspb.UInitTruck{

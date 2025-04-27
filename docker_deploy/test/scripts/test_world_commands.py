@@ -30,8 +30,8 @@ from io import BytesIO
 #
 # Aside from the commands above : A/UQuery (UPS returns UTruck, Amazon returns APackage)
 # Aside from the responses above: A/UErr, APackage, UTruck
-# HOST = 'vcm-46755.vm.duke.edu'
-HOST = 'vcm 47478.vm.duke.edu'
+HOST = 'vcm-46755.vm.duke.edu'
+# HOST = 'vcm-47478.vm.duke.edu'
 UPS_PORT = 12345
 AMAZON_PORT = 23456
 def send_msg(sock, msg):

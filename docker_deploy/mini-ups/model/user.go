@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// User respresents a user in our system.
 type User struct {
 	ID        uint      `gorm:"primary_key" json:"id"`
 	Username  string    `gorm:"unique_index" json:"username"`

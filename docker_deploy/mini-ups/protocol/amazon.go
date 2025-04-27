@@ -10,6 +10,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+//These functions are helper functions that constructs commands to communicate with the world simulator.
+
 // createWarehouse constructs an AInitWarehouse given ID, x, and y coordinates
 func CreateWarehouse(id, x, y int32) *worldamazonpb.AInitWarehouse {
 	return &worldamazonpb.AInitWarehouse{

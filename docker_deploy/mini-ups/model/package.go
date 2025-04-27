@@ -6,6 +6,7 @@ import (
 	"gorm.io/datatypes"
 )
 
+// Package is a model representing a package of a user.
 type Package struct {
 	ID            PackageID      `gorm:"primaryKey" json:"package_id"`
 	Username      string         `gorm:"not null" json:"username"`
@@ -23,6 +24,7 @@ type Package struct {
 type PackageID string
 type PackageStatus string
 
+// These are the different status which a package can have.
 const (
 	StatusCreated          PackageStatus = "created"
 	StatusWaitingForPickup PackageStatus = "waiting_for_pickup"
@@ -35,11 +37,13 @@ const (
 	StatusDelivered        PackageStatus = "delivered"
 )
 
+// SetCoords sets the destination coordinates of a package.
 func (p *Package) SetCoord(x int, y int) {
 	p.Destination.X = x
 	p.Destination.Y = y
 }
 
+// NewPackage creates a new package given the fields. By default they are not prioritized.
 func NewPackage(packageID PackageID, username string, items datatypes.JSON, x int, y int, warehouseID uint, status PackageStatus) *Package {
 	return &Package{
 		ID:          packageID,

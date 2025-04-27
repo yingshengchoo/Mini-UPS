@@ -5,8 +5,8 @@ import (
 	"sync"
 )
 
-//After careful thought, no point merge values in the list since we never need to actually iterate through the list
-//IF world doesn't recieve ack, they resend the response --> we check if ack exist: Yes then send ack, send ack + processe response
+//Recev Window objecct checks and records all seqnum number received from the world simulation
+// In the case that a pacakge is lost, we can ensure that no operation is done twice.
 
 type RecvWindow struct {
 	mu    sync.Mutex

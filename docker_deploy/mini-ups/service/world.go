@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-//Commands 也有ACK?? 我們不知道需不需要ack world the Seqnum
+//This service file handles oeprations related to sending commands to the world simulation.
 
 // SendRequestToGoPickUp sends a pickup request to the UPS world process
 func SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint, seqnum int64) error {

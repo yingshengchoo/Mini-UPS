@@ -14,6 +14,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+//The sender object handles sending message to the world simulation.
+
 type Sender struct {
 	recvWindow *RecvWindow
 	sendWindow *SendWindow
@@ -28,6 +30,7 @@ func NewSender(rw *RecvWindow, sw *SendWindow, conn net.Conn) *Sender {
 	}
 }
 
+// Send sends the command object to the world simulation.
 func (s *Sender) Send(msg proto.Message) error {
 	err := s.SendMsg(s.conn, msg)
 	if err != nil {
@@ -37,6 +40,7 @@ func (s *Sender) Send(msg proto.Message) error {
 	return nil
 }
 
+// Sends a command to the world simulation to havea truck go pick up a package at a warehouse
 func (s *Sender) SendWorldRequestToGoPickUp(truckID model.TruckID, warehouseID uint) error {
 	seqnum := util.GenerateSeqNum()
 

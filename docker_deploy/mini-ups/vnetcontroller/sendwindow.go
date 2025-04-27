@@ -8,12 +8,17 @@ import (
 	"time"
 )
 
+//The sendWindow object maintains the messages sent to the world simulation.
+// In the case the a package is lost from us to world, we can resent it.
+// Once it is acknlowdged, it is removed.
+
 type SendWindow struct {
 	mu       sync.Mutex
 	seqMap   map[int64]*list.Element // seqnum → node
 	respList *list.List              // linked list of responses
 }
 
+// ResponseNode representa a node in our linkedlist.
 type ResponseNode struct {
 	SeqNum    int64
 	MsgType   string //e.g. "UGoPickup", "UQuery", "UTruck"
@@ -21,6 +26,7 @@ type ResponseNode struct {
 	TimeAdded time.Time
 }
 
+// creates a new send window
 func NewSendWindow() *SendWindow {
 	return &SendWindow{
 		seqMap:   make(map[int64]*list.Element),
@@ -28,6 +34,7 @@ func NewSendWindow() *SendWindow {
 	}
 }
 
+// Adds the message to our objecct.
 func (sw *SendWindow) Add(seqnum int64, msgType string, msg interface{}) {
 	sw.mu.Lock()
 	defer sw.mu.Unlock()
@@ -41,6 +48,7 @@ func (sw *SendWindow) Add(seqnum int64, msgType string, msg interface{}) {
 	sw.seqMap[seqnum] = elem
 }
 
+// Finds the message corresponding to the seqnum.
 func (sw *SendWindow) GetResponse(seqnum int64) (string, interface{}) {
 	sw.mu.Lock()
 	defer sw.mu.Unlock()
@@ -51,6 +59,7 @@ func (sw *SendWindow) GetResponse(seqnum int64) (string, interface{}) {
 	return "", nil // or an error if you prefer
 }
 
+// removes the message from our datastructure when world has confirmed receiving it.
 func (sw *SendWindow) Ack(seqnum int64) {
 	sw.mu.Lock()
 	defer sw.mu.Unlock()
@@ -60,6 +69,7 @@ func (sw *SendWindow) Ack(seqnum int64) {
 	}
 }
 
+// Resends stale responses to world.
 func (sw *SendWindow) ResendStaleResponses(pickups []*worldupspb.UGoPickup, queries []*worldupspb.UQuery, deliveries []*worldupspb.UGoDeliver, seqnums []int64, resendFunc func(seqnum int64, msgType string, msg interface{})) {
 	sw.mu.Lock()
 	defer sw.mu.Unlock()

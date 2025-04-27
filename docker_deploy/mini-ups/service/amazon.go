@@ -15,9 +15,9 @@ import (
 	"github.com/google/uuid"
 )
 
-//UPDATE HERE: Make sure to move the listening to response from Service UPS to here!
-//We send Amazon POST request -> We listen to their response
+//This service file Contains methods that hands communication with UPS.
 
+// Amazon url
 var amazonURL = "http://" + config.AppConfig.Amazon.Host + ":" + strconv.Itoa(config.AppConfig.Amazon.Port) + "/api/ups/"
 
 // Send Request to Amazon, notifying that the Delivery was complete
@@ -58,7 +58,6 @@ func NotifyAmazonRedirectPacakge(packageID string, newX, newY, userID int) error
 	return sendAmazonPost(msg)
 }
 
-// 好像我們沒有用到但文當有寫我就寫了
 // Request amazon to return query info on package of given packageID
 func SendQueryStatusToAmazon(packageID string) error {
 	msg := gin.H{
@@ -69,6 +68,7 @@ func SendQueryStatusToAmazon(packageID string) error {
 	return sendAmazonPost(msg)
 }
 
+// Send the Wrold ID from the world simulation to amazon.
 func SendWorldIDToAmazon(worldID int) error {
 	msg := gin.H{
 		"action":     "world_created",

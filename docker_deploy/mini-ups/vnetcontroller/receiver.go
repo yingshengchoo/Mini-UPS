@@ -12,16 +12,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+//The Receiver objects handles response from the world simulation.
+
 type Receiver struct {
 	recvWindow *RecvWindow
 	sendWindow *SendWindow
 	sender     *Sender
 }
 
+// initalizes a New Receiver
 func NewReceiver(rw *RecvWindow, sw *SendWindow, s *Sender) *Receiver {
 	return &Receiver{recvWindow: rw, sendWindow: sw, sender: s}
 }
 
+// ListenForWorldResponses, listens for incoming world responses and handles them.
 func (r *Receiver) ListenForWorldResponses(conn net.Conn) {
 	for {
 		resp := &worldupspb.UResponses{}
@@ -48,17 +52,16 @@ func (r *Receiver) ListenForWorldResponses(conn net.Conn) {
 	}
 }
 
+// handles acks received from the world simulation
 func (r *Receiver) handleAcks(acks []int64) {
 	for _, ack := range acks {
 		r.sendWindow.Ack(ack)
 	}
 }
 
-//Assume all response are correct
-
-// TODO
 // Completion relates to the status of the truck
 // Completion: arrive_warehouse or idle(completed delivery)
+// Handles completion response from world
 func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 	for _, completion := range completions { //可能有很多個
 		truckID := completion.GetTruckid()
@@ -102,7 +105,7 @@ func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 	}
 }
 
-// TODO
+// THandles the delievery made response from world
 func (r *Receiver) handleDeliveries(delivered []*worldupspb.UDeliveryMade) {
 	for _, delivery := range delivered {
 		//truckID := int(delivery.GetTruckid())
@@ -120,7 +123,7 @@ func (r *Receiver) handleDeliveries(delivered []*worldupspb.UDeliveryMade) {
 	}
 }
 
-// TODO
+// Handles truck status from world.
 func (r *Receiver) handleTruckStatus(statusList []*worldupspb.UTruck) {
 	for _, truck := range statusList {
 		truckID := truck.GetTruckid()
@@ -146,11 +149,11 @@ func (r *Receiver) handleTruckStatus(statusList []*worldupspb.UTruck) {
 	}
 }
 
-// TODO
 func (r *Receiver) handleErrors(errors []*worldupspb.UErr) {
 }
 
 // returns true if the seqnum has not been handled, False if it has already been handled
+// Handles seqnums for the responses attached with world responses
 func (r *Receiver) handleSeqnum(seqnum int64) bool {
 	//Check if seqnum has been ack or not.
 	//SendAck regardless (for each seqnum from World we send it back in case it drops the pacakge)
@@ -167,6 +170,7 @@ func (r *Receiver) handleSeqnum(seqnum int64) bool {
 	}
 }
 
+// Recieves messages from the world simulation
 func (r *Receiver) RecvMsg(conn net.Conn, msg proto.Message) error {
 	// Read varint length prefix
 	var size uint64
