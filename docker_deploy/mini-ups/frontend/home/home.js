@@ -62,7 +62,7 @@ async function track(packageID) {
     // hide message bar
     resultEl.style.display = 'none';
   } catch (e) {
-    resultEl.innerText = 'Failed to track';
+    resultEl.innerText = 'Package Not Found.';
   }
 }
 
