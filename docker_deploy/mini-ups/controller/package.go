@@ -3,8 +3,8 @@ package controller
 import (
 	"fmt"
 	"mini-ups/model"
-	"mini-ups/queue"
 	"mini-ups/service"
+	"mini-ups/vnetcontroller"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -163,6 +163,6 @@ func GetShareInfo(c *gin.Context) {
 // prioritizes Pacakge
 func PrioritizePackage(c *gin.Context) {
 	packageID := c.Param("packageID")
-	queue.PkQueue.PrioritizePackage(packageID)
-	queue.PkQueue.PrintLengths()
+	vnetcontroller.PkQueue.PrioritizePackage(packageID)
+	vnetcontroller.PkQueue.PrintLengths()
 }

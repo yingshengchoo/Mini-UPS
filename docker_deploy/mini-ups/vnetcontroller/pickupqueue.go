@@ -1,10 +1,9 @@
-package queue
+package vnetcontroller
 
 import (
 	"log"
 	"mini-ups/model"
 	"mini-ups/service"
-	"mini-ups/vnetcontroller"
 	"sync"
 
 	"gorm.io/datatypes"
@@ -31,7 +30,7 @@ type PickupReq struct {
 	MessageID   string         `json:"message_id" binding:"required"`
 }
 
-var VnetCtrl *vnetcontroller.Controller
+var VnetCtrl *Controller
 var PkQueue = NewPickupQueue(100)
 
 func NewPickupQueue(size uint) *PickupQueue {

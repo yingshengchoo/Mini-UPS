@@ -6,7 +6,7 @@ postgres:
   dbname: miniups
 
 amazon:
-  host: [29fb-174-109-92-244.ngrok-free.app]
+  host: vcm-46755.vm.duke.edu
   port: 8080
 
 ups:

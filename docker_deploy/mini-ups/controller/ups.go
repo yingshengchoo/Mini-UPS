@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"mini-ups/model"
-	"mini-ups/queue"
 	"mini-ups/service"
 	"mini-ups/util"
 	"mini-ups/vnetcontroller"
@@ -110,7 +109,7 @@ func PickUp(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "invalid request"})
 		return
 	}
-	var req queue.PickupReq
+	var req vnetcontroller.PickupReq
 	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		log.Print(err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -129,7 +128,7 @@ func PickUp(c *gin.Context) {
 	}
 	req.PackageID = string(packageID)
 	// goroutine send world pickup
-	go queue.PkQueue.AddRequest(&req)
+	go vnetcontroller.PkQueue.AddRequest(&req)
 
 	//respond to Amazon
 	resp := gin.H{
