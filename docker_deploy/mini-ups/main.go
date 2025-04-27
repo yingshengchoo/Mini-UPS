@@ -39,7 +39,7 @@ func main() {
 	vnetCtrl := vnetcontroller.NewController(util.UPSConn)
 	vnetCtrl.Start() //world response listener
 	controller.Controller = vnetCtrl
-	// queue.VnetCtrl = vnetCtrl
+	vnetcontroller.VnetCtrl = vnetCtrl
 
 	//start router
 	r := router.InitRouter()

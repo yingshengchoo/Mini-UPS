@@ -10,11 +10,10 @@ import (
 )
 
 type PickupQueue struct {
-	queue         chan *PickupReq
-	priorityQueue chan *PickupReq
-	consuming     bool
-	mu            sync.Mutex
-	// availableTrucks int
+	queue            chan *PickupReq
+	prioritizedQueue chan *PickupReq
+	waitingMap       map[string]*PickupReq
+	mu               sync.Mutex
 }
 
 // pick up request struct
@@ -35,117 +34,96 @@ var PkQueue = NewPickupQueue(100)
 
 func NewPickupQueue(size uint) *PickupQueue {
 	return &PickupQueue{
-		queue:         make(chan *PickupReq, size),
-		priorityQueue: make(chan *PickupReq, size),
-		// availableTrucks: truckNum,
+		queue:            make(chan *PickupReq, size),
+		prioritizedQueue: make(chan *PickupReq, size),
+		waitingMap:       make(map[string]*PickupReq),
 	}
 }
 
-// add new req
-// If req is labeled as a prioirty, put it in the priority.
+// add new req to regular queue
 func (q *PickupQueue) AddRequest(req *PickupReq) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	isPrioritized, err := service.IsPackagePrioritized(req.PackageID)
-
-	if err != nil {
-		log.Println("Failed to check if package is prioritized:", err)
-	} else if isPrioritized {
-		q.priorityQueue <- req
-	} else {
-		q.queue <- req
-	}
-
-	if !q.consuming {
-		q.consuming = true
-		go q.tryConsume()
-	}
+	q.waitingMap[req.PackageID] = req
+	q.queue <- req
+	q.tryConsume()
 }
 
-// Goes through the queue to check if the package is in the normal queue, if so,
-// move to prioritized queue
+// add to prioritized queue
+// use a set to record this package, avoiding repeating pickup
 func (q *PickupQueue) PrioritizePackage(packageID string) {
-	newQueue := make(chan *PickupReq, cap(q.queue))
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
+	// check if valid
+	if _, exists := q.waitingMap[packageID]; !exists {
+		return
+	}
+
+	// write to db
 	service.PrioritizePackage(packageID)
 
-	for {
-		select {
-		case req := <-q.queue:
-			if req.PackageID == packageID {
-				q.priorityQueue <- req // Move it to priority queue
-			} else {
-				newQueue <- req
-			}
-		default:
-			q.queue = newQueue
-			// q.mu.Lock()
-			// if !q.consuming {
-			// 	q.consuming = true
-			// 	go q.tryConsume()
-			// }
-			// q.mu.Unlock()
-			return
-		}
-	}
+	// line up
+	q.prioritizedQueue <- q.waitingMap[packageID]
 }
 
-// // try to consume message
-// func (q *PickupQueue) tryConsume() {
-// 	// log.Println("here2")
-// 	for {
-// 		log.Printf("queue size:%d", len(q.queue))
-// 		if len(q.queue) == 0 {
-// 			break
-// 		}
-// 		truck, err := service.GetFirstIdleTruck()
-// 		if err != nil {
-// 			log.Println(err)
-// 			break
-// 		}
-// 		q.Pickup(truck.ID)
-// 	}
-// }
+// try consume with lock
+func (q *PickupQueue) TryConsumeWithLock() {
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
+	q.tryConsume()
+}
+
+// try to consume message
 func (q *PickupQueue) tryConsume() {
-	defer func() {
-		q.mu.Lock()
-		q.consuming = false
-		q.mu.Unlock()
-	}()
-	for {
-		log.Printf("priority size:%d, queue size:%d", len(q.priorityQueue), len(q.queue))
 
-		if len(q.priorityQueue) == 0 && len(q.queue) == 0 {
+	for {
+		log.Printf("priority size:%d, queue size:%d", len(q.prioritizedQueue), len(q.queue))
+
+		// check unprocessed req
+		if len(q.prioritizedQueue) == 0 && len(q.queue) == 0 {
 			break
 		}
 
+		// get available truck
 		truck, err := service.GetFirstIdleTruck()
 		if err != nil {
 			log.Println(err)
 			break
 		}
 
-		select {
-		case req := <-q.priorityQueue:
-			q.Pickup(req, truck.ID)
-		case req := <-q.queue:
-			q.Pickup(req, truck.ID)
-		default:
-			return // No available package to process
+		// assign by priority
+		if len(q.prioritizedQueue) > 0 {
+			req := <-q.prioritizedQueue
+			if _, exists := q.waitingMap[req.PackageID]; exists {
+				delete(q.waitingMap, req.PackageID)
+				q.pickup(req, truck.ID)
+			}
+			continue
+		} else if len(q.queue) > 0 {
+			req := <-q.queue
+			if _, exists := q.waitingMap[req.PackageID]; exists {
+				delete(q.waitingMap, req.PackageID)
+				q.pickup(req, truck.ID)
+			}
+			continue
 		}
 	}
 }
 
 // do pick up
-func (q *PickupQueue) Pickup(req *PickupReq, truckID model.TruckID) {
+func (q *PickupQueue) pickup(req *PickupReq, truckID model.TruckID) {
+	log.Println("pick up:", req.PackageID, "truck:", truckID)
+	// link package to truck
 	err := service.LinkTruckToPackage(string(req.PackageID), uint(truckID))
 	if err != nil {
 		log.Fatalln(err)
 		return
 	}
 
+	// send world pickup command
 	err = VnetCtrl.Sender.SendWorldRequestToGoPickUp(truckID, req.WarehouseID)
 	if err != nil {
 		log.Println("Error sending GoPickUp command:", err)
@@ -155,5 +133,5 @@ func (q *PickupQueue) Pickup(req *PickupReq, truckID model.TruckID) {
 // helper function to print out the lengths of the queues for debugging.
 func (q *PickupQueue) PrintLengths() {
 	log.Print(len(q.queue))
-	log.Print(len(q.priorityQueue))
+	log.Print(len(q.prioritizedQueue))
 }

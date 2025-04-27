@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mini-ups/dao"
 	"mini-ups/model"
 	"mini-ups/protocol/worldupspb"
 	"mini-ups/service"
+
 	"net"
 
 	"google.golang.org/protobuf/proto"
@@ -72,7 +74,7 @@ func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 			continue
 		}
 
-		pack, err := service.GetPackageInfoByTruck(truckID)
+		pack, err := dao.GetPickingPackageInfoByTruckID(truckID)
 		packageID := pack.ID
 		if err != nil {
 			log.Println("Error:", err)
@@ -91,6 +93,7 @@ func (r *Receiver) handleCompletions(completions []*worldupspb.UFinished) {
 		} else if status == "IDLE" {
 			service.ChangeTruckStatus(int(truckID), model.TruckStatus.IDLE)
 			service.NotifyAmazonDeliveryComplete(string(packageID), int(truckID), int(x), int(y))
+			PkQueue.TryConsumeWithLock()
 		}
 		//udpates truck coordinates
 		err = service.ChangeTruckCoord(model.TruckID(int(truckID)), int(x), int(y))

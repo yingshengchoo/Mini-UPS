@@ -165,4 +165,5 @@ func PrioritizePackage(c *gin.Context) {
 	packageID := c.Param("packageID")
 	vnetcontroller.PkQueue.PrioritizePackage(packageID)
 	vnetcontroller.PkQueue.PrintLengths()
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }
