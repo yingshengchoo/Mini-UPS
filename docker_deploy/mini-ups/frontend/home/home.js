@@ -175,10 +175,9 @@ async function getPackageInfo() {
       const btn2 = clone.querySelector(".prioritize-btn");
       if (pkg.status === 'out_for_delivery' || pkg.status === 'delivered') {
         btn.remove();
-        btn2.remove();
       }
 
-      if (pkg.is_prioritized) {
+      if (pkg.is_prioritized || pkg.status != 'created') {
         btn2.remove();
       }
       clone.querySelector('.package-id').textContent = pkg.package_id;
