@@ -77,7 +77,7 @@ func RedirectPackage(packageID string, coord *model.Coordinate) error {
 		return err
 	}
 	// race failed, can not redirect
-	if packageModel.Status == "Delivering" || packageModel.Status == "Delivered" {
+	if packageModel.Status == "out_for_delivery" || packageModel.Status == "delivered" {
 		return errors.New("package already out of delivery")
 	}
 
